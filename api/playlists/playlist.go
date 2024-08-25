@@ -60,3 +60,15 @@ func (playlistService *PlaylistService) Insert(name string, description string, 
 	res, err := insertPlaylist(playlistService.yt, name, description, status)
 	return res, err
 }
+
+func deletePlaylist(yt *youtube.Service, playlistId string) error {
+	req := yt.Playlists.Delete(playlistId)
+
+	err := req.Do()
+	return err
+}
+
+func (playlistService *PlaylistService) Delete(playlistId string) error {
+	err := deletePlaylist(playlistService.yt, playlistId)
+	return err
+}
