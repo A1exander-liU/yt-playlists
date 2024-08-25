@@ -112,3 +112,18 @@ func (playlistItemService *PlaylistItemService) Move(playlistId string, playlist
 	}
 	return moved, nil
 }
+
+func (playlistItemService *PlaylistItemService) Exists(playlistId string, playlistItem *youtube.PlaylistItem) (bool, error) {
+	videos, err := list(playlistItemService.yt, playlistId, []string{"snippet"})
+	if err != nil {
+		return false, err
+	}
+
+	for _, video := range videos {
+		if playlistItem.Snippet.ResourceId.VideoId == video.Snippet.ResourceId.VideoId {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
