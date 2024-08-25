@@ -1,6 +1,10 @@
 package playlists
 
-import "google.golang.org/api/youtube/v3"
+import (
+	"fmt"
+
+	"google.golang.org/api/youtube/v3"
+)
 
 type PlaylistService struct {
 	yt *youtube.Service
@@ -38,4 +42,21 @@ func (playlistService *PlaylistService) List(part []string) (*youtube.PlaylistLi
 
 	res.Items = playlists
 	return res, nil
+}
+
+func insertPlaylist(yt *youtube.Service, name string, description string, status string) (*youtube.Playlist, error) {
+	if status != "public" && status != "private" && status != "unlisted" {
+		return nil, fmt.Errorf("%v is not a valid staus: Must be one of 'private', 'public', or 'unlisted'", status)
+	}
+	newPlaylistStatus := &youtube.PlaylistStatus{PrivacyStatus: status}
+	newPlaylist := &youtube.Playlist{Snippet: &youtube.PlaylistSnippet{Title: name, Description: description}, Status: newPlaylistStatus}
+	req := yt.Playlists.Insert([]string{"snippet,status"}, newPlaylist)
+
+	res, err := req.Do()
+	return res, err
+}
+
+func (playlistService *PlaylistService) Insert(name string, description string, status string) (*youtube.Playlist, error) {
+	res, err := insertPlaylist(playlistService.yt, name, description, status)
+	return res, err
 }
