@@ -1,6 +1,7 @@
 package playlists
 
 import (
+	"context"
 	"fmt"
 
 	"google.golang.org/api/youtube/v3"
@@ -14,14 +15,16 @@ func New(yt *youtube.Service) *PlaylistService {
 	return &PlaylistService{yt: yt}
 }
 
-func listPlaylists(yt *youtube.Service, part []string, nextPage string) (*youtube.PlaylistListResponse, error) {
-	req := yt.Playlists.List(part).Mine(true).PageToken(nextPage).MaxResults(50)
+func listPlaylists(yt *youtube.Service, part []string) ([]*youtube.Playlist, error) {
+	items := []*youtube.Playlist{}
+	req := yt.Playlists.List(part).Mine(true).MaxResults(50)
 
-	res, err := req.Do()
-	if err != nil {
-		return nil, err
-	}
-	return res, nil
+	err := req.Pages(context.Background(), func(res *youtube.PlaylistListResponse) error {
+		items = append(items, res.Items...)
+		return nil
+	})
+
+	return items, err
 }
 
 func insertPlaylist(yt *youtube.Service, name string, description string, status string) (*youtube.Playlist, error) {
@@ -43,24 +46,9 @@ func deletePlaylist(yt *youtube.Service, playlistId string) error {
 	return err
 }
 
-func (playlistService *PlaylistService) List(part []string) (*youtube.PlaylistListResponse, error) {
-	res, err := listPlaylists(playlistService.yt, part, "")
-	playlists := []*youtube.Playlist{}
-	if err != nil {
-		return nil, err
-	}
-	playlists = append(playlists, res.Items...)
-
-	for res.NextPageToken != "" {
-		res, err = listPlaylists(playlistService.yt, part, res.NextPageToken)
-		if err != nil {
-			return nil, err
-		}
-		playlists = append(playlists, res.Items...)
-	}
-
-	res.Items = playlists
-	return res, nil
+func (playlistService *PlaylistService) List(part []string) ([]*youtube.Playlist, error) {
+	res, err := listPlaylists(playlistService.yt, part)
+	return res, err
 }
 
 func (playlistService *PlaylistService) Insert(name string, description string, status string) (*youtube.Playlist, error) {
