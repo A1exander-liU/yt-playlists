@@ -54,6 +54,17 @@ func (v *Video) ToggleSelected(i int) {
 	v.view.SetItemText(i, mainText, "")
 }
 
+func (v *Video) ClearSelected() {
+	keys := make([]int, 0, len(v.selectedVideos))
+	for k := range v.selectedVideos {
+		keys = append(keys, k)
+	}
+
+	for _, key := range keys {
+		v.ToggleSelected(key)
+	}
+}
+
 // Helpers
 
 // Initializes the component
@@ -85,6 +96,8 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 	case 'k':
 		return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
+	case 'x':
+		v.ClearSelected()
 	}
 
 	return event
