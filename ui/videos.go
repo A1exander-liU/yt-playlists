@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"google.golang.org/api/youtube/v3"
@@ -39,11 +41,26 @@ func (v *Video) PlaylistSelected(playlistId string) {
 	}()
 }
 
+func (v *Video) ToggleSelected(i int) {
+	mainText := fmt.Sprintf("%s • %s", v.videos[i].Snippet.Title, v.videos[i].Snippet.VideoOwnerChannelTitle)
+
+	if _, ok := v.selectedVideos[i]; ok {
+		delete(v.selectedVideos, i)
+		mainText = fmt.Sprintf("[white]%s", mainText)
+	} else {
+		v.selectedVideos[i] = v.videos[i]
+		mainText = fmt.Sprintf("[green]%s", mainText)
+	}
+	v.view.SetItemText(i, mainText, "")
+}
+
 // Helpers
 
 // Initializes the component
 func (v *Video) init() {
-	v.view.SetHighlightFullLine(true).ShowSecondaryText(true).SetWrapAround(false).SetBorder(true).SetTitle("Videos").SetBorderPadding(0, 0, 1, 1)
+	v.view.SetHighlightFullLine(true).ShowSecondaryText(false).SetWrapAround(false).SetBorder(true).SetTitle("Videos").SetBorderPadding(0, 0, 1, 1)
+	v.view.SetSelectedFunc(func(i int, s1, s2 string, r rune) { v.ToggleSelected(i) })
+	v.view.SetSelectedBackgroundColor(tcell.NewRGBColor(40, 44, 52))
 	v.view.SetInputCapture(v.keyboard)
 }
 
@@ -52,7 +69,8 @@ func (v *Video) refreshItems() {
 	v.view.Clear()
 
 	for _, video := range v.videos {
-		v.view.AddItem(video.Snippet.Title, video.Snippet.VideoOwnerChannelTitle, 0, nil)
+		mainText := fmt.Sprintf("[white]%s • %s", video.Snippet.Title, video.Snippet.VideoOwnerChannelTitle)
+		v.view.AddItem(mainText, "", 0, nil)
 	}
 }
 
