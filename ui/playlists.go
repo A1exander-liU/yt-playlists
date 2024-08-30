@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"google.golang.org/api/youtube/v3"
@@ -24,15 +26,19 @@ type Playlist struct {
 
 	// list of current listeners for playlist selected event
 	listeners []SelectedPlaylistListener
+
+	// currently selected playlist
+	selectedPlaylist int
 }
 
 // Creates a new Playlist component
 func NewPlaylists(a *App) *Playlist {
 	playlist := Playlist{
-		app:       a,
-		view:      tview.NewList().SetHighlightFullLine(true),
-		playlists: []*youtube.Playlist{},
-		listeners: []SelectedPlaylistListener{},
+		app:              a,
+		view:             tview.NewList().SetHighlightFullLine(true),
+		playlists:        []*youtube.Playlist{},
+		listeners:        []SelectedPlaylistListener{},
+		selectedPlaylist: -1,
 	}
 	playlist.init()
 
@@ -56,10 +62,22 @@ func (p *Playlist) NotifySelected(playlistId string) {
 // Initializes the component
 func (p *Playlist) init() {
 	p.view.SetHighlightFullLine(true).ShowSecondaryText(false).SetWrapAround(false).SetBorder(true).SetTitle("Playlists").SetBorderPadding(0, 0, 1, 1)
+	p.view.SetSelectedBackgroundColor(COLOR_HIGHLIGHT)
 	p.view.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
 		if i < 0 || i > len(p.playlists)-1 {
 			return
 		}
+
+		if p.selectedPlaylist >= 0 {
+			prevSelected := fmt.Sprintf("[white]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
+			p.view.SetItemText(p.selectedPlaylist, prevSelected, "")
+		}
+
+		p.selectedPlaylist = i
+
+		newSelected := fmt.Sprintf("[green]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
+		p.view.SetItemText(i, newSelected, "")
+
 		p.NotifySelected(p.playlists[i].Id)
 	})
 	p.view.SetInputCapture(p.keyboard)
@@ -76,7 +94,8 @@ func (p *Playlist) refreshItems() {
 	p.view.Clear()
 
 	for _, playlist := range p.playlists {
-		p.view.AddItem(playlist.Snippet.Title, "", 0, nil)
+		mainText := fmt.Sprintf("[white]%s", playlist.Snippet.Title)
+		p.view.AddItem(mainText, "", 0, nil)
 	}
 }
 
