@@ -173,6 +173,30 @@ func (v *Video) addVideosFlow() {
 	})
 }
 
+func (v *Video) moveVideosFlow() {
+	playlists, err := v.app.api.Playlists.List([]string{"snippet"})
+	if err != nil {
+		return
+	}
+
+	filtered := make([]*youtube.Playlist, 0)
+	for _, playlist := range playlists {
+		if playlist.Id == v.selectedPlaylistId {
+			continue
+		}
+		filtered = append(filtered, playlist)
+	}
+
+	sp := NewSelectPlaylist(v.app, "Move", filtered, func(p *youtube.Playlist) {
+		v.MoveVideos(p.Id)
+		v.app.CloseModal("Move")
+	})
+
+	v.app.QueueUpdateDraw(func() {
+		v.app.Display(sp.listModal, "Move")
+	})
+}
+
 // Handles keyboard input
 func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	if event.Key() == tcell.KeyTAB {
@@ -189,6 +213,7 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	case 'a':
 		go v.addVideosFlow()
 	case 'm':
+		go v.moveVideosFlow()
 	case 'd':
 		videoCount := len(v.selectedVideos)
 		if videoCount == 0 {
