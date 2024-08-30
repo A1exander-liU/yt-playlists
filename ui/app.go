@@ -24,37 +24,9 @@ func New() *App {
 		views:       make(map[string]tview.Primitive),
 		modals:      make(map[string]bool),
 	}
+	app.init()
 
 	return &app
-}
-
-func (a *App) Init() {
-	// create views
-	playlists := NewPlaylists(a)
-	videos := NewVideos(a)
-	a.views["Playlists"] = playlists.view
-	a.views["Videos"] = videos.view
-
-	main := tview.NewFlex().
-		AddItem(playlists.view, 0, 1, true).
-		AddItem(videos.view, 0, 3, false)
-
-	// set listeners
-	playlists.AddListener(videos)
-
-	// setup
-
-	a.pages.AddPage("Main", main, true, true)
-
-	main.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
-		if a.pages.HasPage("Modal") {
-			return action, nil
-		}
-		return action, event
-	})
-
-	a.SetInputCapture(a.keyboard)
-	a.Application.SetRoot(a.pages, true).EnableMouse(true)
 }
 
 func (a *App) DisplayModal(p tview.Primitive, name string, onCancel func()) {
@@ -76,6 +48,40 @@ func (a *App) Run() error {
 }
 
 // Helper
+
+func (a *App) init() {
+	// create views
+	playlists := NewPlaylists(a)
+	videos := NewVideos(a)
+	a.views["Playlists"] = playlists.view
+	a.views["Videos"] = videos.view
+
+	main := tview.NewFlex().
+		AddItem(playlists.view, 0, 1, true).
+		AddItem(videos.view, 0, 3, false)
+	help := NewHelp()
+
+	core := tview.NewFlex().SetDirection(tview.FlexRow)
+	core.AddItem(main, 0, 10, true)
+	core.AddItem(help.view, 1, 1, false)
+
+	// set listeners
+	playlists.AddListener(videos)
+
+	// setup
+
+	a.pages.AddPage("Main", core, true, true)
+
+	main.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
+		if a.pages.HasPage("Modal") {
+			return action, nil
+		}
+		return action, event
+	})
+
+	a.SetInputCapture(a.keyboard)
+	a.Application.SetRoot(a.pages, true).EnableMouse(true)
+}
 
 func (a *App) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	if event.Rune() == 'q' {
