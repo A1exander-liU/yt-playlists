@@ -89,6 +89,10 @@ func (v *Video) MoveVideos(playlistId string) {
 			return
 		}
 		v.videos = videos
+		for k := range v.selectedVideos {
+			delete(v.selectedVideos, k)
+		}
+
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }

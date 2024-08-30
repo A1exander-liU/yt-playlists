@@ -14,6 +14,7 @@ type SelectPlaylist struct {
 func NewSelectPlaylist(a *App, name string, playlists []*youtube.Playlist, selected func(*youtube.Playlist)) *SelectPlaylist {
 	sp := SelectPlaylist{app: a}
 	list := sp.setupList(playlists, selected)
+	list.SetTitle(name)
 
 	sp.listModal = Modal(list, func() { sp.app.CloseModal(name) }, 40, 20)
 
