@@ -1,12 +1,13 @@
-module example.com/demo
+module github.com/A1exander-liU/yt-playlists
 
 go 1.23.0
 
 require (
-	github.com/gdamore/tcell/v2 v2.7.1
+	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/rivo/tview v0.0.0-20240818110301-fd649dbf1223
+	github.com/spf13/cobra v1.8.1
 	golang.org/x/oauth2 v0.22.0
-	google.golang.org/api v0.194.0
+	google.golang.org/api v0.195.0
 )
 
 require (
@@ -24,15 +25,14 @@ require (
 	github.com/googleapis/gax-go/v2 v2.13.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect
-	go.opentelemetry.io/otel v1.29.0 // indirect
-	go.opentelemetry.io/otel/metric v1.29.0 // indirect
-	go.opentelemetry.io/otel/trace v1.29.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.49.0 // indirect
+	go.opentelemetry.io/otel v1.24.0 // indirect
+	go.opentelemetry.io/otel/metric v1.24.0 // indirect
+	go.opentelemetry.io/otel/trace v1.24.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect

@@ -1,16 +1,7 @@
 package main
 
-import (
-	"os"
-
-	"example.com/demo/ui"
-)
+import "github.com/A1exander-liU/yt-playlists/cmd"
 
 func main() {
-	app := ui.New()
-	app.Init()
-	if err := app.Run(); err != nil {
-		app.Stop()
-		os.Exit(1)
-	}
+	cmd.Execute()
 }

@@ -3,9 +3,9 @@ package api
 import (
 	"context"
 
-	playlistitems "example.com/demo/api/playlistItems"
-	"example.com/demo/api/playlists"
-	"example.com/demo/auth"
+	playlistitems "github.com/A1exander-liU/yt-playlists/api/playlistItems"
+	"github.com/A1exander-liU/yt-playlists/api/playlists"
+	"github.com/A1exander-liU/yt-playlists/auth"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 )

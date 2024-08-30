@@ -3,7 +3,7 @@ package ui
 import (
 	"os"
 
-	"example.com/demo/api"
+	"github.com/A1exander-liU/yt-playlists/api"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
