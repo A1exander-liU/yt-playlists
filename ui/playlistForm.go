@@ -5,18 +5,30 @@ import (
 	"github.com/rivo/tview"
 )
 
+// Form component for creating a new playlist. Contains a input field for the name,
+// a dropdown to choose the privacy status and a text area to fill out the description.
 type PlaylistForm struct {
-	app  *App
+	// an instance of the app
+	app *App
+
+	// the root view to display
 	view *tview.Form
 }
 
+// Information in playlist form
 type formData struct {
-	name          string
+	// name of the playlist
+	name string
+
+	// privacy of the playlist, could be one of: 'private', 'public', or 'unlisted'
 	privacyStatus string
-	description   string
+
+	// description of the playlist
+	description string
 }
 
-// creates a new playlist form
+// Creates a new playlist form component. Accepts an instance of the app and a function 'onSubmit' to be called
+// when form was submitted.
 func NewPlaylistForm(app *App, onSubmit func()) *PlaylistForm {
 	form := PlaylistForm{
 		app:  app,
@@ -27,16 +39,17 @@ func NewPlaylistForm(app *App, onSubmit func()) *PlaylistForm {
 	return &form
 }
 
-// shows the form
+// shows the form.
 func (p *PlaylistForm) Show() {
 	p.app.Display(p.view, "Form")
 }
 
-// closes the form
+// closes the form.
 func (p *PlaylistForm) Close() {
 	p.app.CloseModal("Form")
 }
 
+// Submits the form and creates the playlist with the current form data.
 func (p *PlaylistForm) Submit() {
 	formData := p.getFormData()
 
@@ -47,7 +60,7 @@ func (p *PlaylistForm) Submit() {
 	p.app.api.Playlists.Insert(formData.name, formData.description, formData.privacyStatus)
 }
 
-// initializes the component
+// Initializes the component.
 func (p *PlaylistForm) init(onSubmit func()) {
 	dropdown := tview.NewDropDown().
 		SetLabel("Privacy Status").
@@ -72,7 +85,7 @@ func (p *PlaylistForm) init(onSubmit func()) {
 	p.view.SetBorder(true).SetTitle("Create Playlist").SetBorderPadding(0, 0, 1, 1)
 }
 
-// returns a struct containing all current form data
+// Collects all the current form data.
 func (p *PlaylistForm) getFormData() formData {
 	name := p.view.GetFormItemByLabel("Name").(*tview.InputField).GetText()
 	_, privacyStatus := p.view.GetFormItemByLabel("Privacy Status").(*tview.DropDown).GetCurrentOption()
@@ -85,7 +98,7 @@ func (p *PlaylistForm) getFormData() formData {
 	}
 }
 
-// keyboard input handler for buttons
+// Keyboard input handler for buttons.
 func (p *PlaylistForm) keyboardButton(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Rune() {
 	case ' ':
@@ -94,7 +107,7 @@ func (p *PlaylistForm) keyboardButton(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-// keyboard input handler callback for dropdown
+// Keyboard input handler callback for dropdown.
 func (p *PlaylistForm) keyboardDropdown(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Rune() {
 	case 'j':
