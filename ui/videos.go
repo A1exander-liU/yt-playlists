@@ -44,6 +44,7 @@ func (v *Video) PlaylistSelected(playlist *youtube.Playlist) {
 			return
 		}
 		v.videos = videos
+		v.ClearSelected()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
@@ -123,11 +124,7 @@ func (v *Video) DeleteVideos() {
 			return
 		}
 		v.videos = videos
-
-		// clear selected videos
-		for k := range v.selectedVideos {
-			delete(v.selectedVideos, k)
-		}
+		v.ClearSelected()
 
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
