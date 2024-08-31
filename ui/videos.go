@@ -62,7 +62,15 @@ func (v *Video) ToggleSelected(i int) {
 	v.view.SetItemText(i, mainText, "")
 }
 
+// removes all selected videos from the selected videos map
 func (v *Video) ClearSelected() {
+	for k := range v.selectedVideos {
+		delete(v.selectedVideos, k)
+	}
+}
+
+// removes all selected videos from the map and unselects from ui
+func (v *Video) ClearSelectedUI() {
 	keys := make([]int, 0, len(v.selectedVideos))
 	for k := range v.selectedVideos {
 		keys = append(keys, k)
@@ -90,9 +98,7 @@ func (v *Video) MoveVideos(playlistId string) {
 			return
 		}
 		v.videos = videos
-		for k := range v.selectedVideos {
-			delete(v.selectedVideos, k)
-		}
+		v.ClearSelected()
 
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
@@ -107,6 +113,8 @@ func (v *Video) AddVideos(playlistId string) {
 		}
 
 		v.app.api.PlaylistItems.Add(playlistId, videos)
+		v.ClearSelected()
+		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
 
@@ -125,6 +133,7 @@ func (v *Video) DeleteVideos() {
 		}
 		v.videos = videos
 		v.ClearSelected()
+		v.refreshItems()
 
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
@@ -210,7 +219,7 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	case 'k':
 		return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
 	case 'x':
-		v.ClearSelected()
+		v.ClearSelectedUI()
 	case 'a':
 		go v.addVideosFlow()
 	case 'm':
