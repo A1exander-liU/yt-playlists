@@ -15,11 +15,11 @@ var (
 
 // Component to display videos of a playlist
 type Video struct {
-	app                *App
-	view               *tview.List
-	videos             []*youtube.PlaylistItem
-	selectedVideos     map[int]*youtube.PlaylistItem
-	selectedPlaylistId string
+	app              *App
+	view             *tview.List
+	videos           []*youtube.PlaylistItem
+	selectedVideos   map[int]*youtube.PlaylistItem
+	selectedPlaylist *youtube.Playlist
 }
 
 // Creates a new Video component
@@ -36,10 +36,10 @@ func NewVideos(a *App) *Video {
 }
 
 // Callback when playlist was selected
-func (v *Video) PlaylistSelected(playlistId string) {
+func (v *Video) PlaylistSelected(playlist *youtube.Playlist) {
 	go func() {
-		v.selectedPlaylistId = playlistId
-		videos, err := v.app.api.PlaylistItems.List(playlistId, []string{"snippet"})
+		v.selectedPlaylist = playlist
+		videos, err := v.app.api.PlaylistItems.List(playlist.Id, []string{"snippet"})
 		if err != nil {
 			return
 		}
@@ -84,7 +84,7 @@ func (v *Video) MoveVideos(playlistId string) {
 		}
 
 		v.app.api.PlaylistItems.Move(playlistId, videos)
-		videos, err := v.app.api.PlaylistItems.List(v.selectedPlaylistId, []string{"snippet"})
+		videos, err := v.app.api.PlaylistItems.List(v.selectedPlaylist.Id, []string{"snippet"})
 		if err != nil {
 			return
 		}
@@ -118,7 +118,7 @@ func (v *Video) DeleteVideos() {
 		}
 
 		v.app.api.PlaylistItems.Delete(ids)
-		videos, err := v.app.api.PlaylistItems.List(v.selectedPlaylistId, []string{"snippet"})
+		videos, err := v.app.api.PlaylistItems.List(v.selectedPlaylist.Id, []string{"snippet"})
 		if err != nil {
 			return
 		}
@@ -161,7 +161,7 @@ func (v *Video) addVideosFlow() {
 
 	filtered := make([]*youtube.Playlist, 0)
 	for _, playlist := range playlists {
-		if playlist.Id == v.selectedPlaylistId {
+		if playlist.Id == v.selectedPlaylist.Id {
 			continue
 		}
 		filtered = append(filtered, playlist)
@@ -185,7 +185,7 @@ func (v *Video) moveVideosFlow() {
 
 	filtered := make([]*youtube.Playlist, 0)
 	for _, playlist := range playlists {
-		if playlist.Id == v.selectedPlaylistId {
+		if playlist.Id == v.selectedPlaylist.Id {
 			continue
 		}
 		filtered = append(filtered, playlist)
@@ -231,9 +231,9 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 				selectedVideo = video
 			}
 
-			message = fmt.Sprintf("Delete %v from %v", selectedVideo.Snippet.Title, v.selectedPlaylistId)
+			message = fmt.Sprintf("Delete %v from %v", selectedVideo.Snippet.Title, v.selectedPlaylist.Snippet.Title)
 		} else {
-			message = fmt.Sprintf("Delete %v videos from %v?", videoCount, v.selectedPlaylistId)
+			message = fmt.Sprintf("Delete %v videos from %v?", videoCount, v.selectedPlaylist.Snippet.Title)
 		}
 		dialog := DeleteDialog(message, v.DeleteVideos, func() { v.app.CloseModal("Delete") })
 		v.app.DisplayModal(dialog, "Delete", func() { v.app.CloseModal("Delete") })

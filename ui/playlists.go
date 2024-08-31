@@ -10,7 +10,7 @@ import (
 
 // Listen for playlist being selected
 type SelectedPlaylistListener interface {
-	PlaylistSelected(string)
+	PlaylistSelected(*youtube.Playlist)
 }
 
 // Component to display playlists
@@ -51,10 +51,35 @@ func (p *Playlist) AddListener(listener SelectedPlaylistListener) {
 }
 
 // Notifie listeners when playlist was selected
-func (p *Playlist) NotifySelected(playlistId string) {
+func (p *Playlist) NotifySelected(playlist *youtube.Playlist) {
 	for _, listener := range p.listeners {
-		listener.PlaylistSelected(playlistId)
+		listener.PlaylistSelected(playlist)
 	}
+}
+
+// use form component for this
+func (p *Playlist) CreatePlaylist(name string, description string, status string) {
+	go func() {
+		p.app.api.Playlists.Insert(name, description, status)
+		playlists, err := p.app.api.Playlists.List([]string{"snippet"})
+		if err != nil {
+			return
+		}
+		p.playlists = playlists
+		p.app.QueueUpdateDraw(func() { p.refreshItems() })
+	}()
+}
+
+func (p *Playlist) DeletePlaylist(playlistId string) {
+	go func() {
+		p.app.api.Playlists.Delete(playlistId)
+		playlists, err := p.app.api.Playlists.List([]string{"snippet"})
+		if err != nil {
+			return
+		}
+		p.playlists = playlists
+		p.app.QueueUpdateDraw(func() { p.refreshItems() })
+	}()
 }
 
 // Helpers
@@ -78,7 +103,7 @@ func (p *Playlist) init() {
 		newSelected := fmt.Sprintf("[green]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
 		p.view.SetItemText(i, newSelected, "")
 
-		p.NotifySelected(p.playlists[i].Id)
+		p.NotifySelected(p.playlists[i])
 	})
 	p.view.SetInputCapture(p.keyboard)
 
