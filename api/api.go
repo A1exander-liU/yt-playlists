@@ -12,6 +12,12 @@ import (
 
 var PART_SNIPPET = "snippet"
 
+var (
+	PRIVACY_PRIVATE  = "private"
+	PRIVACY_PUBLIC   = "public"
+	PRIVACY_UNLISTED = "unlisted"
+)
+
 type ApiService struct {
 	yt            *youtube.Service
 	Playlists     *playlists.PlaylistService
