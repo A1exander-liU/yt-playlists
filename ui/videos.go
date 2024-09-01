@@ -179,7 +179,7 @@ func (v *Video) addVideosFlow() {
 	})
 
 	v.app.QueueUpdateDraw(func() {
-		v.app.Display(sp.listModal, "Add")
+		v.app.DisplayModal(sp.listModal, "Add")
 	})
 }
 
@@ -203,7 +203,7 @@ func (v *Video) moveVideosFlow() {
 	})
 
 	v.app.QueueUpdateDraw(func() {
-		v.app.Display(sp.listModal, "Move")
+		v.app.DisplayModal(sp.listModal, "Move")
 	})
 }
 
@@ -242,7 +242,7 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 			message = fmt.Sprintf("Delete %v videos from %v?", videoCount, v.selectedPlaylist.Snippet.Title)
 		}
 		dialog := DeleteDialog(message, v.DeleteVideos, func() { v.app.CloseModal("Delete") })
-		v.app.DisplayModal(dialog, "Delete", func() { v.app.CloseModal("Delete") })
+		v.app.DisplayModal(dialog, "Delete")
 
 	}
 

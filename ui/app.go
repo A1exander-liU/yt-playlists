@@ -29,8 +29,8 @@ func New() *App {
 	return &app
 }
 
-func (a *App) DisplayModal(p tview.Primitive, name string, onCancel func()) {
-	a.pages.AddPage(name, Modal(p, onCancel, 40, 20), true, true)
+func (a *App) DisplayModal(p tview.Primitive, name string) {
+	a.pages.AddPage(name, p, true, true)
 	a.modals[name] = true
 }
 
@@ -73,7 +73,7 @@ func (a *App) init() {
 	a.pages.AddPage("Main", core, true, true)
 
 	main.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
-		if a.pages.HasPage("Modal") {
+		if a.ModalActive() {
 			return action, nil
 		}
 		return action, event
@@ -108,7 +108,6 @@ func (a *App) toggleHelp() {
 	if a.pages.HasPage("Help") {
 		a.CloseModal("Help")
 	} else {
-		view := ListModal("Help", 40, 20, func() { a.CloseModal("Help") })
-		a.DisplayModal(view, "Help", func() { a.CloseModal("Help") })
+		a.DisplayModal(NewHelpModal(a).view, "Help")
 	}
 }

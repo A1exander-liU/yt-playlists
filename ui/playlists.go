@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -108,7 +109,8 @@ func (p *Playlist) init() {
 	p.view.SetInputCapture(p.keyboard)
 
 	go func() {
-		playlists, _ := p.app.api.Playlists.List([]string{"snippet"})
+		playlists, err := p.app.api.Playlists.List([]string{"snippet"})
+		log.Println(err)
 		p.playlists = playlists
 		p.app.QueueUpdateDraw(func() { p.refreshItems() })
 	}()
@@ -131,6 +133,16 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	}
 
 	switch event.Rune() {
+	case 'a':
+		NewPlaylistForm(p.app, func() {
+			playlists, err := p.app.api.Playlists.List([]string{"snippet"})
+			if err != nil {
+				return
+			}
+
+			p.playlists = playlists
+			p.app.QueueUpdateDraw(func() { p.refreshItems() })
+		}).Show()
 	case 'j':
 		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 	case 'k':
