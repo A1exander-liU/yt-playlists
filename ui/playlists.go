@@ -58,76 +58,43 @@ func (p *Playlist) NotifySelected(playlist *youtube.Playlist) {
 	}
 }
 
-// use form component for this
-func (p *Playlist) CreatePlaylist(name string, description string, status string) {
-	go func() {
-		p.app.api.Playlists.Insert(name, description, status)
-		playlists, err := p.app.api.Playlists.List([]string{"snippet"})
-		if err != nil {
-			return
-		}
-		p.playlists = playlists
-		p.app.QueueUpdateDraw(func() { p.refreshItems() })
-	}()
-}
-
-func (p *Playlist) DeletePlaylist(playlistId string) {
-	go func() {
-		p.app.api.Playlists.Delete(playlistId)
-		playlists, err := p.app.api.Playlists.List([]string{"snippet"})
-		if err != nil {
-			return
-		}
-		p.playlists = playlists
-		p.app.QueueUpdateDraw(func() { p.refreshItems() })
-	}()
-}
-
 // Helpers
 
 // Initializes the component
 func (p *Playlist) init() {
 	p.view.SetHighlightFullLine(true).ShowSecondaryText(false).SetWrapAround(false).SetBorder(true).SetTitle("Playlists").SetBorderPadding(0, 0, 1, 1)
 	p.view.SetSelectedBackgroundColor(COLOR_HIGHLIGHT)
-	p.view.SetSelectedFunc(func(i int, s1, s2 string, r rune) {
-		if i < 0 || i > len(p.playlists)-1 {
-			return
-		}
 
-		if p.selectedPlaylist >= 0 {
-			prevSelected := fmt.Sprintf("[white]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
-			p.view.SetItemText(p.selectedPlaylist, prevSelected, "")
-		}
-
-		p.selectedPlaylist = i
-
-		newSelected := fmt.Sprintf("[green]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
-		p.view.SetItemText(i, newSelected, "")
-
-		p.NotifySelected(p.playlists[i])
-	})
+	p.view.SetSelectedFunc(p.selected)
 	p.view.SetInputCapture(p.keyboard)
 
 	go func() {
-		playlists, err := p.app.api.Playlists.List([]string{"snippet"})
-		log.Println(err)
-		p.playlists = playlists
-		p.app.QueueUpdateDraw(func() { p.refreshItems() })
+		playlists, _ := p.app.api.Playlists.List([]string{"snippet"})
+		p.app.QueueUpdateDraw(func() { p.SetPlaylists(playlists) })
 	}()
 }
 
-// Redraws the playlist items
-func (p *Playlist) refreshItems() {
+func (p *Playlist) SetPlaylists(playlists []*youtube.Playlist) {
+	var selectedPlaylistId string
+	if p.selectedPlaylist >= 0 {
+		selectedPlaylistId = p.playlists[p.selectedPlaylist].Id
+	}
+
+	p.playlists = playlists
 	p.view.Clear()
 
 	for _, playlist := range p.playlists {
 		mainText := fmt.Sprintf("[white]%s", playlist.Snippet.Title)
+		if playlist.Id == selectedPlaylistId {
+			mainText = fmt.Sprintf("[green]%s", playlist.Snippet.Title)
+		}
 		p.view.AddItem(mainText, "", 0, nil)
 	}
 }
 
 // Handles keyboard input
 func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
+	log.Println(len(p.playlists))
 	if event.Key() == tcell.KeyTAB {
 		return nil
 	}
@@ -135,13 +102,11 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Rune() {
 	case 'a':
 		NewPlaylistForm(p.app, func() {
-			playlists, err := p.app.api.Playlists.List([]string{"snippet"})
-			if err != nil {
-				return
-			}
-
-			p.playlists = playlists
-			p.app.QueueUpdateDraw(func() { p.refreshItems() })
+			// think issue is create and list basically happen at same time so when list to get updated, we still get prev stuff
+			// have to do some waiting
+			log.Println("before", len(p.playlists))
+			playlists, _ := p.app.api.Playlists.List([]string{"snippet"})
+			log.Println("updated playlists after new creation", len(playlists))
 		}).Show()
 	case 'j':
 		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
@@ -150,4 +115,23 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	}
 
 	return event
+}
+
+// Callback when item is selected (pressing <space> or <enter>) in the list.
+func (p *Playlist) selected(i int, s1, s2 string, r rune) {
+	if i < 0 || i > len(p.playlists)-1 {
+		return
+	}
+
+	if p.selectedPlaylist >= 0 {
+		prevSelected := fmt.Sprintf("[white]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
+		p.view.SetItemText(p.selectedPlaylist, prevSelected, "")
+	}
+
+	p.selectedPlaylist = i
+
+	newSelected := fmt.Sprintf("[green]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
+	p.view.SetItemText(i, newSelected, "")
+
+	p.NotifySelected(p.playlists[i])
 }

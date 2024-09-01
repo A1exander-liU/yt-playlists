@@ -4,25 +4,29 @@ import (
 	"os"
 
 	"github.com/A1exander-liU/yt-playlists/api"
+	"github.com/A1exander-liU/yt-playlists/controllers"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
 type App struct {
 	*tview.Application
-	api    *api.ApiService
-	pages  *tview.Pages
-	views  map[string]tview.Primitive
-	modals map[string]bool
+	api                *api.ApiService
+	playlistController *controllers.PlaylistsController
+	pages              *tview.Pages
+	views              map[string]tview.Primitive
+	modals             map[string]bool
 }
 
 func New() *App {
+	api := api.New()
 	app := App{
-		Application: tview.NewApplication(),
-		api:         api.New(),
-		pages:       tview.NewPages(),
-		views:       make(map[string]tview.Primitive),
-		modals:      make(map[string]bool),
+		Application:        tview.NewApplication(),
+		api:                api,
+		playlistController: controllers.NewPlaylistsController(api),
+		pages:              tview.NewPages(),
+		views:              make(map[string]tview.Primitive),
+		modals:             make(map[string]bool),
 	}
 	app.init()
 
