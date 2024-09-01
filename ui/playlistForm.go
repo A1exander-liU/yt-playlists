@@ -12,7 +12,9 @@ type PlaylistForm struct {
 	app *App
 
 	// the root view to display
-	view *tview.Form
+	view tview.Primitive
+
+	formView *tview.Form
 }
 
 // Information in playlist form
@@ -31,10 +33,11 @@ type formData struct {
 // when form was submitted.
 func NewPlaylistForm(app *App, onSubmit func()) *PlaylistForm {
 	form := PlaylistForm{
-		app:  app,
-		view: tview.NewForm(),
+		app: app,
 	}
-	form.init(onSubmit)
+	formView := form.init(onSubmit)
+	form.view = Modal(formView, form.Close, 60, 20)
+	form.formView = formView
 
 	return &form
 }
@@ -61,14 +64,16 @@ func (p *PlaylistForm) Submit() {
 }
 
 // Initializes the component.
-func (p *PlaylistForm) init(onSubmit func()) {
+func (p *PlaylistForm) init(onSubmit func()) *tview.Form {
+	form := tview.NewForm()
+
 	dropdown := tview.NewDropDown().
 		SetLabel("Privacy Status").
 		SetOptions([]string{"private", "public", "unlisted"}, nil).
 		SetCurrentOption(0)
 	dropdown.SetInputCapture(p.keyboardDropdown)
 
-	p.view.
+	form.
 		AddInputField("Name", "", 30, nil, nil).
 		AddFormItem(dropdown).
 		AddTextArea("Description", "", 40, 0, 0, nil).
@@ -81,17 +86,19 @@ func (p *PlaylistForm) init(onSubmit func()) {
 		}).
 		AddButton("Cancel", func() { p.Close() })
 
-	p.view.GetButton(0).SetInputCapture(p.keyboardButton)
-	p.view.GetButton(1).SetInputCapture(p.keyboardButton)
+	form.GetButton(0).SetInputCapture(p.keyboardButton)
+	form.GetButton(1).SetInputCapture(p.keyboardButton)
 
-	p.view.SetBorder(true).SetTitle("Create Playlist").SetBorderPadding(0, 0, 1, 1)
+	form.SetBorder(true).SetTitle("Create Playlist").SetBorderPadding(0, 0, 1, 1)
+
+	return form
 }
 
 // Collects all the current form data.
 func (p *PlaylistForm) getFormData() formData {
-	name := p.view.GetFormItemByLabel("Name").(*tview.InputField).GetText()
-	_, privacyStatus := p.view.GetFormItemByLabel("Privacy Status").(*tview.DropDown).GetCurrentOption()
-	description := p.view.GetFormItemByLabel("Description").(*tview.TextArea).GetText()
+	name := p.formView.GetFormItemByLabel("Name").(*tview.InputField).GetText()
+	_, privacyStatus := p.formView.GetFormItemByLabel("Privacy Status").(*tview.DropDown).GetCurrentOption()
+	description := p.formView.GetFormItemByLabel("Description").(*tview.TextArea).GetText()
 
 	return formData{
 		name:          name,
