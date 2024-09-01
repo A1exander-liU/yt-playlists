@@ -41,7 +41,7 @@ func NewPlaylistForm(app *App, onSubmit func()) *PlaylistForm {
 
 // shows the form.
 func (p *PlaylistForm) Show() {
-	p.app.Display(p.view, "Form")
+	p.app.DisplayModal(p.view, "Form")
 }
 
 // closes the form.
@@ -74,8 +74,10 @@ func (p *PlaylistForm) init(onSubmit func()) {
 		AddTextArea("Description", "", 40, 0, 0, nil).
 		AddButton("Create", func() {
 			p.Submit()
-			onSubmit()
 			p.Close()
+			if onSubmit != nil {
+				onSubmit()
+			}
 		}).
 		AddButton("Cancel", func() { p.Close() })
 
