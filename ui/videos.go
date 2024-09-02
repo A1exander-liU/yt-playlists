@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 
+	"github.com/A1exander-liU/yt-playlists/controllers"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"google.golang.org/api/youtube/v3"
@@ -16,6 +17,7 @@ var (
 // Component to display videos of a playlist
 type Video struct {
 	app              *App
+	controller       *controllers.VideosController
 	view             *tview.List
 	videos           []*youtube.PlaylistItem
 	selectedVideos   map[int]*youtube.PlaylistItem
@@ -23,9 +25,10 @@ type Video struct {
 }
 
 // Creates a new Video component
-func NewVideos(a *App) *Video {
+func NewVideos(a *App, controller *controllers.VideosController) *Video {
 	video := Video{
 		app:            a,
+		controller:     controller,
 		view:           tview.NewList(),
 		videos:         []*youtube.PlaylistItem{},
 		selectedVideos: make(map[int]*youtube.PlaylistItem),
@@ -38,35 +41,29 @@ func NewVideos(a *App) *Video {
 // Callback when playlist was selected
 func (v *Video) PlaylistSelected(playlist *youtube.Playlist) {
 	go func() {
-		v.selectedPlaylist = playlist
-		videos, err := v.app.api.PlaylistItems.List(playlist.Id, []string{"snippet"})
-		if err != nil {
-			return
-		}
-		v.videos = videos
+		v.controller.SelectedPlaylist = playlist
 		v.ClearSelected()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
 
 func (v *Video) ToggleSelected(i int) {
-	mainText := fmt.Sprintf("%s • %s", v.videos[i].Snippet.Title, v.videos[i].Snippet.VideoOwnerChannelTitle)
+	videos := v.controller.GetVideos()
+	mainText := fmt.Sprintf("%s • %s", videos[i].Snippet.Title, videos[i].Snippet.VideoOwnerChannelTitle)
+	v.controller.ToggleSelected(i)
 
-	if _, ok := v.selectedVideos[i]; ok {
-		delete(v.selectedVideos, i)
-		mainText = fmt.Sprintf("[white]%s", mainText)
-	} else {
-		v.selectedVideos[i] = v.videos[i]
+	if v.controller.IsSelectedVideo(i) {
 		mainText = fmt.Sprintf("[green]%s", mainText)
+	} else {
+		mainText = fmt.Sprintf("[white]%s", mainText)
 	}
+
 	v.view.SetItemText(i, mainText, "")
 }
 
 // removes all selected videos from the selected videos map
 func (v *Video) ClearSelected() {
-	for k := range v.selectedVideos {
-		delete(v.selectedVideos, k)
-	}
+	v.controller.ClearSelectedVides()
 }
 
 // removes all selected videos from the map and unselects from ui
@@ -153,7 +150,7 @@ func (v *Video) init() {
 func (v *Video) refreshItems() {
 	v.view.Clear()
 
-	for _, video := range v.videos {
+	for _, video := range v.controller.GetVideos() {
 		mainText := fmt.Sprintf("[white]%s • %s", video.Snippet.Title, video.Snippet.VideoOwnerChannelTitle)
 		v.view.AddItem(mainText, "", 0, nil)
 	}

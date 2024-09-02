@@ -13,6 +13,7 @@ type App struct {
 	*tview.Application
 	api                *api.ApiService
 	playlistController *controllers.PlaylistsController
+	videosController   *controllers.VideosController
 	pages              *tview.Pages
 	views              map[string]tview.Primitive
 	modals             map[string]bool
@@ -24,6 +25,7 @@ func New() *App {
 		Application:        tview.NewApplication(),
 		api:                api,
 		playlistController: controllers.NewPlaylistsController(api),
+		videosController:   controllers.NewVideosController(api),
 		pages:              tview.NewPages(),
 		views:              make(map[string]tview.Primitive),
 		modals:             make(map[string]bool),
@@ -56,7 +58,7 @@ func (a *App) Run() error {
 func (a *App) init() {
 	// create views
 	playlists := NewPlaylists(a)
-	videos := NewVideos(a)
+	videos := NewVideos(a, a.videosController)
 	a.views["Playlists"] = playlists.view
 	a.views["Videos"] = videos.view
 

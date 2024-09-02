@@ -10,7 +10,7 @@ type VideosController struct {
 	api *api.ApiService
 
 	// The currently selected playlist
-	selectedPlaylist *youtube.Playlist
+	SelectedPlaylist *youtube.Playlist
 
 	// To store all the current videos of the selected playlist
 	videos []*youtube.PlaylistItem
@@ -23,7 +23,9 @@ type VideosController struct {
 // Creates a new VideosController
 func NewVideosController(api *api.ApiService) *VideosController {
 	controller := VideosController{
-		api: api,
+		api:            api,
+		videos:         make([]*youtube.PlaylistItem, 0),
+		selectedVideos: make(map[int]*youtube.PlaylistItem),
 	}
 
 	return &controller
@@ -31,7 +33,10 @@ func NewVideosController(api *api.ApiService) *VideosController {
 
 // Retrieves the current videos in this object. Calls VideosController.syncVideos to maintain updated.
 func (v *VideosController) GetVideos() []*youtube.PlaylistItem {
-	v.syncVideos()
+	if len(v.videos) == 0 {
+		v.syncVideos()
+	}
+
 	return v.videos
 }
 
@@ -55,6 +60,11 @@ func (v *VideosController) ToggleSelected(i int) {
 	}
 }
 
+func (v *VideosController) IsSelectedVideo(i int) bool {
+	_, ok := v.selectedVideos[i]
+	return ok
+}
+
 // Removes all selected videos.
 func (v *VideosController) ClearSelectedVides() {
 	for k := range v.selectedVideos {
@@ -65,12 +75,14 @@ func (v *VideosController) ClearSelectedVides() {
 // Adds the selected videos to the playlist specified by playlistId. The selected videos will be inserted into the playlist.
 func (v *VideosController) AddVideos(playlistId string) {
 	v.api.PlaylistItems.Add(playlistId, v.GetSelectedVideos())
+	v.syncVideos()
 }
 
 // Moves the selected videos from the current playlist (VideosController.selectedPlaylist) to the playlist specified by playlistId.
 // The selected videos will be deleted from the current playlist and then inserted in the new playlist.
 func (v *VideosController) MoveVideos(playlistId string) {
 	v.api.PlaylistItems.Move(playlistId, v.GetSelectedVideos())
+	v.syncVideos()
 }
 
 // Deletes the selected videos from the current playlist (VideosController.selectedPlaylist).
@@ -81,10 +93,11 @@ func (v *VideosController) DeleteVideos() {
 	}
 
 	v.api.PlaylistItems.Delete(ids)
+	v.syncVideos()
 }
 
 // Retrieves the currennt videos of the selected playlist. Call this to sync the current videos with videos from the API server.
 func (v *VideosController) syncVideos() {
-	videos, _ := v.api.PlaylistItems.List(v.selectedPlaylist.Id, []string{api.PART_SNIPPET})
+	videos, _ := v.api.PlaylistItems.List(v.SelectedPlaylist.Id, []string{api.PART_SNIPPET})
 	v.videos = videos
 }
