@@ -6,6 +6,8 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+// Renders the given primitive as a modal. onCancel function will be called when pressnig 'ESC' key
+// which will cancel the modal.
 func Modal(p tview.Primitive, onCancel func(), width, height int) tview.Primitive {
 	root := tview.NewFlex()
 
@@ -34,7 +36,9 @@ func ListModal(title string, width, height int, onCancel func()) tview.Primitive
 	return Modal(list, onCancel, width, height)
 }
 
-func DeleteDialog(message string, confirm func(), cancel func()) *tview.Modal {
+// A Dialog with 2 choices 'Yes' and 'No', pass the confirm function for callback when 'Yes' is selected,
+// pass the cancel function when exiting the modal.
+func Dialog(message string, confirm func(), cancel func()) *tview.Modal {
 	dialog := tview.NewModal().
 		SetText(message).
 		AddButtons([]string{"No", "Yes"}).

@@ -107,6 +107,24 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 				p.SetPlaylists(slices.Insert(p.playlists, 0, playlist))
 			}).
 			Show()
+	case 'd':
+		current := p.view.GetCurrentItem()
+
+		confirm := func() {
+			p.app.playlistController.DeletePlaylist(p.playlists[current].Id)
+			p.app.QueueUpdateDraw(func() {
+				p.SetPlaylists(slices.Delete(p.playlists, current, current+1))
+			})
+		}
+
+		message := fmt.Sprintf("Delete the playlist: %s ?", p.playlists[current].Snippet.Title)
+		dialog := Dialog(
+			message,
+			func() {
+				go confirm()
+			},
+			func() { p.app.CloseModal("Delete") })
+		p.app.DisplayModal(dialog, "Delete")
 	case 'j':
 		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 	case 'k':

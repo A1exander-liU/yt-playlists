@@ -241,7 +241,7 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 		} else {
 			message = fmt.Sprintf("Delete %v videos from %v?", videoCount, v.selectedPlaylist.Snippet.Title)
 		}
-		dialog := DeleteDialog(message, v.DeleteVideos, func() { v.app.CloseModal("Delete") })
+		dialog := Dialog(message, v.DeleteVideos, func() { v.app.CloseModal("Delete") })
 		v.app.DisplayModal(dialog, "Delete")
 
 	}
