@@ -151,4 +151,5 @@ func (p *Playlist) selected(i int, s1, s2 string, r rune) {
 	p.view.SetItemText(i, newSelected, "")
 
 	p.NotifySelected(p.playlists[i])
+	p.app.SetFocus(p.app.views["Videos"])
 }
