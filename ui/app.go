@@ -57,7 +57,7 @@ func (a *App) Run() error {
 
 func (a *App) init() {
 	// create views
-	playlists := NewPlaylists(a)
+	playlists := NewPlaylists(a, a.playlistController)
 	videos := NewVideos(a, a.videosController)
 	a.views["Playlists"] = playlists.view
 	a.views["Videos"] = videos.view

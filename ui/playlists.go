@@ -2,9 +2,8 @@ package ui
 
 import (
 	"fmt"
-	"log"
-	"slices"
 
+	"github.com/A1exander-liU/yt-playlists/controllers"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"google.golang.org/api/youtube/v3"
@@ -20,27 +19,23 @@ type Playlist struct {
 	// the application instance
 	app *App
 
+	// controller to manage data in the playlists view
+	controller *controllers.PlaylistsController
+
 	// root view of the component
 	view *tview.List
 
-	// list of playlists
-	playlists []*youtube.Playlist
-
 	// list of current listeners for playlist selected event
 	listeners []SelectedPlaylistListener
-
-	// currently selected playlist
-	selectedPlaylist int
 }
 
 // Creates a new Playlist component
-func NewPlaylists(a *App) *Playlist {
+func NewPlaylists(a *App, p *controllers.PlaylistsController) *Playlist {
 	playlist := Playlist{
-		app:              a,
-		view:             tview.NewList().SetHighlightFullLine(true),
-		playlists:        []*youtube.Playlist{},
-		listeners:        []SelectedPlaylistListener{},
-		selectedPlaylist: -1,
+		app:        a,
+		controller: p,
+		view:       tview.NewList().SetHighlightFullLine(true),
+		listeners:  []SelectedPlaylistListener{},
 	}
 	playlist.init()
 
@@ -70,21 +65,21 @@ func (p *Playlist) init() {
 	p.view.SetInputCapture(p.keyboard)
 
 	go func() {
-		playlists, _ := p.app.api.Playlists.List([]string{"snippet"})
-		p.app.QueueUpdateDraw(func() { p.SetPlaylists(playlists) })
+		p.controller.SyncPlaylists()
+		p.app.QueueUpdateDraw(func() { p.SetPlaylists() })
 	}()
 }
 
-func (p *Playlist) SetPlaylists(playlists []*youtube.Playlist) {
+func (p *Playlist) SetPlaylists() {
 	var selectedPlaylistId string
-	if p.selectedPlaylist >= 0 {
-		selectedPlaylistId = p.playlists[p.selectedPlaylist].Id
+
+	if p.controller.GetSelectedPlaylist() >= 0 {
+		selectedPlaylistId = p.controller.GetPlaylists()[p.controller.GetSelectedPlaylist()].Id
 	}
 
-	p.playlists = playlists
 	p.view.Clear()
 
-	for _, playlist := range p.playlists {
+	for _, playlist := range p.controller.GetPlaylists() {
 		mainText := fmt.Sprintf("[white]%s", playlist.Snippet.Title)
 		if playlist.Id == selectedPlaylistId {
 			mainText = fmt.Sprintf("[green]%s", playlist.Snippet.Title)
@@ -95,7 +90,6 @@ func (p *Playlist) SetPlaylists(playlists []*youtube.Playlist) {
 
 // Handles keyboard input
 func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
-	log.Println(len(p.playlists))
 	if event.Key() == tcell.KeyTAB {
 		return nil
 	}
@@ -104,20 +98,21 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	case 'a':
 		NewPlaylistForm(p.app).
 			SetAfterSubmitFunc(func(playlist *youtube.Playlist, err error) {
-				p.SetPlaylists(slices.Insert(p.playlists, 0, playlist))
 			}).
 			Show()
 	case 'd':
 		current := p.view.GetCurrentItem()
-
 		confirm := func() {
-			p.app.playlistController.DeletePlaylist(p.playlists[current].Id)
+			p.controller.DeletePlaylistId(current)
+			if current == p.controller.GetSelectedPlaylist() {
+				p.controller.SetSelectedPlaylist(-1)
+			}
 			p.app.QueueUpdateDraw(func() {
-				p.SetPlaylists(slices.Delete(p.playlists, current, current+1))
+				p.SetPlaylists()
 			})
 		}
 
-		message := fmt.Sprintf("Delete the playlist: %s ?", p.playlists[current].Snippet.Title)
+		message := fmt.Sprintf("Delete the playlist: %s ?", p.controller.GetPlaylists()[current].Snippet.Title)
 		dialog := Dialog(
 			message,
 			func() {
@@ -136,20 +131,16 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 
 // Callback when item is selected (pressing <space> or <enter>) in the list.
 func (p *Playlist) selected(i int, s1, s2 string, r rune) {
-	if i < 0 || i > len(p.playlists)-1 {
-		return
+	playlists := p.controller.GetPlaylists()
+	if p.controller.GetSelectedPlaylist() >= 0 {
+		prevSelected := fmt.Sprintf("[white]%v", playlists[p.controller.GetSelectedPlaylist()].Snippet.Title)
+		p.view.SetItemText(p.controller.GetSelectedPlaylist(), prevSelected, "")
 	}
 
-	if p.selectedPlaylist >= 0 {
-		prevSelected := fmt.Sprintf("[white]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
-		p.view.SetItemText(p.selectedPlaylist, prevSelected, "")
-	}
-
-	p.selectedPlaylist = i
-
-	newSelected := fmt.Sprintf("[green]%v", p.playlists[p.selectedPlaylist].Snippet.Title)
+	p.controller.SetSelectedPlaylist(i)
+	newSelected := fmt.Sprintf("[green]%v", playlists[p.controller.GetSelectedPlaylist()].Snippet.Title)
 	p.view.SetItemText(i, newSelected, "")
 
-	p.NotifySelected(p.playlists[i])
+	p.NotifySelected(playlists[i])
 	p.app.SetFocus(p.app.views["Videos"])
 }
