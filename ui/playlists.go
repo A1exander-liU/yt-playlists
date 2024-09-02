@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -101,13 +102,11 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 
 	switch event.Rune() {
 	case 'a':
-		NewPlaylistForm(p.app, func() {
-			// think issue is create and list basically happen at same time so when list to get updated, we still get prev stuff
-			// have to do some waiting
-			log.Println("before", len(p.playlists))
-			playlists, _ := p.app.api.Playlists.List([]string{"snippet"})
-			log.Println("updated playlists after new creation", len(playlists))
-		}).Show()
+		NewPlaylistForm(p.app).
+			SetAfterSubmitFunc(func(playlist *youtube.Playlist, err error) {
+				p.SetPlaylists(slices.Insert(p.playlists, 0, playlist))
+			}).
+			Show()
 	case 'j':
 		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 	case 'k':

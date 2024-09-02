@@ -1,8 +1,11 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"google.golang.org/api/youtube/v3"
 )
 
 // Form component for creating a new playlist. Contains a input field for the name,
@@ -15,6 +18,9 @@ type PlaylistForm struct {
 	view tview.Primitive
 
 	formView *tview.Form
+
+	// callback for after form submission
+	afterSubmit func(*youtube.Playlist, error)
 }
 
 // Information in playlist form
@@ -31,15 +37,20 @@ type formData struct {
 
 // Creates a new playlist form component. Accepts an instance of the app and a function 'onSubmit' to be called
 // when form was submitted.
-func NewPlaylistForm(app *App, onSubmit func()) *PlaylistForm {
+func NewPlaylistForm(app *App) *PlaylistForm {
 	form := PlaylistForm{
 		app: app,
 	}
-	formView := form.init(onSubmit)
+	formView := form.init()
 	form.view = Modal(formView, form.Close, 60, 20)
 	form.formView = formView
 
 	return &form
+}
+
+func (p *PlaylistForm) SetAfterSubmitFunc(afterSubmit func(*youtube.Playlist, error)) *PlaylistForm {
+	p.afterSubmit = afterSubmit
+	return p
 }
 
 // shows the form.
@@ -53,18 +64,18 @@ func (p *PlaylistForm) Close() {
 }
 
 // Submits the form and creates the playlist with the current form data.
-func (p *PlaylistForm) Submit() {
+func (p *PlaylistForm) Submit() (*youtube.Playlist, error) {
 	formData := p.getFormData()
 
 	if formData.name == "" {
-		return
+		return nil, fmt.Errorf("Name must be filled out")
 	}
 
-	p.app.api.Playlists.Insert(formData.name, formData.description, formData.privacyStatus)
+	return p.app.api.Playlists.Insert(formData.name, formData.description, formData.privacyStatus)
 }
 
 // Initializes the component.
-func (p *PlaylistForm) init(onSubmit func()) *tview.Form {
+func (p *PlaylistForm) init() *tview.Form {
 	form := tview.NewForm()
 
 	dropdown := tview.NewDropDown().
@@ -78,11 +89,13 @@ func (p *PlaylistForm) init(onSubmit func()) *tview.Form {
 		AddFormItem(dropdown).
 		AddTextArea("Description", "", 40, 0, 0, nil).
 		AddButton("Create", func() {
-			p.Submit()
-			p.Close()
-			if onSubmit != nil {
-				onSubmit()
+			playlist, err := p.Submit()
+
+			if playlist != nil && p.afterSubmit != nil {
+				p.afterSubmit(playlist, err)
 			}
+
+			p.Close()
 		}).
 		AddButton("Cancel", func() { p.Close() })
 
