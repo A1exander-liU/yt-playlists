@@ -40,6 +40,10 @@ func (v *VideosController) GetVideos() []*youtube.PlaylistItem {
 	return v.videos
 }
 
+func (v *VideosController) GetSelectedVideosMap() map[int]*youtube.PlaylistItem {
+	return v.selectedVideos
+}
+
 // Retrieves the currently selected videos.
 func (v *VideosController) GetSelectedVideos() []*youtube.PlaylistItem {
 	videos := make([]*youtube.PlaylistItem, 0)

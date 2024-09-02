@@ -68,8 +68,9 @@ func (v *Video) ClearSelected() {
 
 // removes all selected videos from the map and unselects from ui
 func (v *Video) ClearSelectedUI() {
-	keys := make([]int, 0, len(v.selectedVideos))
-	for k := range v.selectedVideos {
+	selectedVideos := v.controller.GetSelectedVideosMap()
+	keys := make([]int, 0, len(selectedVideos))
+	for k := range selectedVideos {
 		keys = append(keys, k)
 	}
 
