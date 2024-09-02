@@ -16,22 +16,17 @@ var (
 
 // Component to display videos of a playlist
 type Video struct {
-	app              *App
-	controller       *controllers.VideosController
-	view             *tview.List
-	videos           []*youtube.PlaylistItem
-	selectedVideos   map[int]*youtube.PlaylistItem
-	selectedPlaylist *youtube.Playlist
+	app        *App
+	controller *controllers.VideosController
+	view       *tview.List
 }
 
 // Creates a new Video component
 func NewVideos(a *App, controller *controllers.VideosController) *Video {
 	video := Video{
-		app:            a,
-		controller:     controller,
-		view:           tview.NewList(),
-		videos:         []*youtube.PlaylistItem{},
-		selectedVideos: make(map[int]*youtube.PlaylistItem),
+		app:        a,
+		controller: controller,
+		view:       tview.NewList(),
 	}
 	video.init()
 
