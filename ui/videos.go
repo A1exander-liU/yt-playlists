@@ -186,13 +186,6 @@ func (v *Video) dialogActionMessage(verb string) string {
 	return message
 }
 
-func (v *Video) firstSelectedVideo() *youtube.PlaylistItem {
-	for _, video := range v.selectedVideos {
-		return video
-	}
-	return nil
-}
-
 // Handles keyboard input
 func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	if event.Key() == tcell.KeyTAB {
