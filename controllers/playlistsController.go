@@ -39,8 +39,8 @@ func (p *PlaylistsController) ExcludeFromPlaylists(playlists []*youtube.Playlist
 	return filtered
 }
 
-func (p *PlaylistsController) CreatePlaylist(name, privacyStatus, description string) {
-	p.api.Playlists.Insert(name, description, privacyStatus)
+func (p *PlaylistsController) CreatePlaylist(name, privacyStatus, description string) (*youtube.Playlist, error) {
+	return p.api.Playlists.Insert(name, description, privacyStatus)
 }
 
 func (p *PlaylistsController) DeletePlaylist(playlistId string) {
