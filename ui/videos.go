@@ -42,6 +42,7 @@ func NewVideos(a *App, controller *controllers.VideosController) *Video {
 func (v *Video) PlaylistSelected(playlist *youtube.Playlist) {
 	go func() {
 		v.controller.SelectedPlaylist = playlist
+		v.controller.SyncVideos()
 		v.ClearSelected()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
