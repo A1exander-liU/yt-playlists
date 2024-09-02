@@ -33,10 +33,7 @@ func NewVideosController(api *api.ApiService) *VideosController {
 
 // Retrieves the current videos in this object. Calls VideosController.syncVideos to maintain updated.
 func (v *VideosController) GetVideos() []*youtube.PlaylistItem {
-	if len(v.videos) == 0 {
-		v.syncVideos()
-	}
-
+	v.syncVideos()
 	return v.videos
 }
 

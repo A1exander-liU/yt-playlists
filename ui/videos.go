@@ -105,12 +105,8 @@ func (v *Video) MoveVideos(playlistId string) {
 // Adds the selected videos from current playlist to one specified by 'playlistId'
 func (v *Video) AddVideos(playlistId string) {
 	go func() {
-		videos := make([]*youtube.PlaylistItem, 0, len(v.selectedVideos))
-		for _, video := range v.selectedVideos {
-			videos = append(videos, video)
-		}
+		v.controller.AddVideos(playlistId)
 
-		v.app.api.PlaylistItems.Add(playlistId, videos)
 		v.ClearSelected()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
@@ -162,8 +158,7 @@ func (v *Video) addVideosFlow() {
 	if err != nil {
 		return
 	}
-
-	filtered := v.app.playlistController.ExcludeFromPlaylists(playlists, v.selectedPlaylist.Id)
+	filtered := v.app.playlistController.ExcludeFromPlaylists(playlists, v.controller.SelectedPlaylist.Id)
 
 	sp := NewSelectPlaylist(v.app, "Add", filtered, func(p *youtube.Playlist) {
 		v.AddVideos(p.Id)
@@ -226,7 +221,7 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	case 'x':
 		v.ClearSelectedUI()
 	case 'a':
-		if len(v.selectedVideos) == 0 {
+		if len(v.controller.GetSelectedVideos()) == 0 {
 			return nil
 		}
 		go v.addVideosFlow()
