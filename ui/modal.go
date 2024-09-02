@@ -3,7 +3,6 @@ package ui
 import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"google.golang.org/api/youtube/v3"
 )
 
 // Renders the given primitive as a modal. onCancel function will be called when pressnig 'ESC' key
@@ -29,11 +28,6 @@ func Modal(p tview.Primitive, onCancel func(), width, height int) tview.Primitiv
 	})
 
 	return root
-}
-
-func ListModal(title string, width, height int, onCancel func()) tview.Primitive {
-	list := tview.NewList().SetHighlightFullLine(true).SetTitle(title).SetBorder(true)
-	return Modal(list, onCancel, width, height)
 }
 
 // A Dialog with 2 choices 'Yes' and 'No', pass the confirm function for callback when 'Yes' is selected,
@@ -62,19 +56,4 @@ func Dialog(message string, confirm func(), cancel func()) *tview.Modal {
 	})
 
 	return dialog
-}
-
-// 2 modals on for list, one fir onfirm
-func SelectPlaylistDialog(items []*youtube.Playlist, selected func(*youtube.Playlist), cancel func()) tview.Primitive {
-	list := tview.NewList().
-		SetHighlightFullLine(true).
-		ShowSecondaryText(false)
-
-	for _, item := range items {
-		list.AddItem(item.Snippet.Title, "", 0, func() { selected(item) })
-	}
-
-	playlistModal := Modal(list, cancel, 40, 20)
-
-	return playlistModal
 }
