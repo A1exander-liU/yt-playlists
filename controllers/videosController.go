@@ -97,6 +97,13 @@ func (v *VideosController) DeleteVideos() {
 	v.syncVideos()
 }
 
+func (v *VideosController) FirstSelectedVideo() *youtube.PlaylistItem {
+	for _, video := range v.selectedVideos {
+		return video
+	}
+	return nil
+}
+
 // Retrieves the currennt videos of the selected playlist. Call this to sync the current videos with videos from the API server.
 func (v *VideosController) syncVideos() {
 	videos, _ := v.api.PlaylistItems.List(v.SelectedPlaylist.Id, []string{api.PART_SNIPPET})

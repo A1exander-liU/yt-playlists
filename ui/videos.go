@@ -115,19 +115,8 @@ func (v *Video) AddVideos(playlistId string) {
 // Deletes the selected videos in the current playlist
 func (v *Video) DeleteVideos() {
 	go func() {
-		ids := make([]string, 0, len(v.selectedVideos))
-		for _, video := range v.selectedVideos {
-			ids = append(ids, video.Id)
-		}
-
-		v.app.api.PlaylistItems.Delete(ids)
-		videos, err := v.app.api.PlaylistItems.List(v.selectedPlaylist.Id, []string{"snippet"})
-		if err != nil {
-			return
-		}
-		v.videos = videos
+		v.controller.DeleteVideos()
 		v.ClearSelected()
-		v.refreshItems()
 
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
@@ -192,9 +181,9 @@ func (v *Video) moveVideosFlow() {
 // Message to display for dialogs confirming actions to add, move, or delete videos from playlists.
 // Will display name of video if there is only one otherwise it will list the amount of videos.
 func (v *Video) dialogActionMessage(verb string) string {
-	message := fmt.Sprintf("%v %v videos", verb, len(v.selectedVideos))
-	if len(v.selectedVideos) == 1 {
-		oneVideo := v.firstSelectedVideo()
+	message := fmt.Sprintf("%v %v videos", verb, len(v.controller.GetSelectedVideosMap()))
+	if len(v.controller.GetSelectedVideosMap()) == 1 {
+		oneVideo := v.controller.FirstSelectedVideo()
 		message = fmt.Sprintf("%v %v", verb, oneVideo.Snippet.Title)
 	}
 
@@ -232,11 +221,11 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 		}
 		go v.moveVideosFlow()
 	case 'd':
-		if len(v.selectedVideos) == 0 {
+		if len(v.controller.GetSelectedVideos()) == 0 {
 			return nil
 		}
 
-		message := fmt.Sprintf("%v from %v", v.dialogActionMessage("Delete"), v.selectedPlaylist.Snippet.Title)
+		message := fmt.Sprintf("%v from %v", v.dialogActionMessage("Delete"), v.controller.SelectedPlaylist.Snippet.Title)
 		dialog := Dialog(message, func() { v.DeleteVideos() }, func() { v.app.CloseModal("Delete") })
 		v.app.DisplayModal(dialog, "Delete")
 
