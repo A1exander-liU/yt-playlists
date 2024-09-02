@@ -165,13 +165,7 @@ func (v *Video) addVideosFlow() {
 		return
 	}
 
-	filtered := make([]*youtube.Playlist, 0)
-	for _, playlist := range playlists {
-		if playlist.Id == v.selectedPlaylist.Id {
-			continue
-		}
-		filtered = append(filtered, playlist)
-	}
+	filtered := v.app.playlistController.ExcludeFromPlaylists(playlists, v.selectedPlaylist.Id)
 
 	sp := NewSelectPlaylist(v.app, "Add", filtered, func(p *youtube.Playlist) {
 		v.AddVideos(p.Id)
@@ -189,13 +183,7 @@ func (v *Video) moveVideosFlow() {
 		return
 	}
 
-	filtered := make([]*youtube.Playlist, 0)
-	for _, playlist := range playlists {
-		if playlist.Id == v.selectedPlaylist.Id {
-			continue
-		}
-		filtered = append(filtered, playlist)
-	}
+	filtered := v.app.playlistController.ExcludeFromPlaylists(playlists, v.selectedPlaylist.Id)
 
 	sp := NewSelectPlaylist(v.app, "Move", filtered, func(p *youtube.Playlist) {
 		v.MoveVideos(p.Id)
@@ -205,6 +193,25 @@ func (v *Video) moveVideosFlow() {
 	v.app.QueueUpdateDraw(func() {
 		v.app.DisplayModal(sp.listModal, "Move")
 	})
+}
+
+// Message to display for dialogs confirming actions to add, move, or delete videos from playlists.
+// Will display name of video if there is only one otherwise it will list the amount of videos.
+func (v *Video) dialogActionMessage(verb string) string {
+	message := fmt.Sprintf("%v %v videos", verb, len(v.selectedVideos))
+	if len(v.selectedVideos) == 1 {
+		oneVideo := v.firstSelectedVideo()
+		message = fmt.Sprintf("%v %v", verb, oneVideo.Snippet.Title)
+	}
+
+	return message
+}
+
+func (v *Video) firstSelectedVideo() *youtube.PlaylistItem {
+	for _, video := range v.selectedVideos {
+		return video
+	}
+	return nil
 }
 
 // Handles keyboard input
@@ -221,27 +228,22 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	case 'x':
 		v.ClearSelectedUI()
 	case 'a':
+		if len(v.selectedVideos) == 0 {
+			return nil
+		}
 		go v.addVideosFlow()
 	case 'm':
+		if len(v.selectedVideos) == 0 {
+			return nil
+		}
 		go v.moveVideosFlow()
 	case 'd':
-		videoCount := len(v.selectedVideos)
-		if videoCount == 0 {
+		if len(v.selectedVideos) == 0 {
 			return nil
 		}
 
-		var message string
-		if videoCount == 1 {
-			var selectedVideo *youtube.PlaylistItem
-			for _, video := range v.selectedVideos {
-				selectedVideo = video
-			}
-
-			message = fmt.Sprintf("Delete %v from %v", selectedVideo.Snippet.Title, v.selectedPlaylist.Snippet.Title)
-		} else {
-			message = fmt.Sprintf("Delete %v videos from %v?", videoCount, v.selectedPlaylist.Snippet.Title)
-		}
-		dialog := Dialog(message, v.DeleteVideos, func() { v.app.CloseModal("Delete") })
+		message := fmt.Sprintf("%v from %v", v.dialogActionMessage("Delete"), v.selectedPlaylist.Snippet.Title)
+		dialog := Dialog(message, func() { v.DeleteVideos() }, func() { v.app.CloseModal("Delete") })
 		v.app.DisplayModal(dialog, "Delete")
 
 	}
