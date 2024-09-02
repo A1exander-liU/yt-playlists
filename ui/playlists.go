@@ -132,15 +132,18 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 // Callback when item is selected (pressing <space> or <enter>) in the list.
 func (p *Playlist) selected(i int, s1, s2 string, r rune) {
 	playlists := p.controller.GetPlaylists()
-	if p.controller.GetSelectedPlaylist() >= 0 {
-		prevSelected := fmt.Sprintf("[white]%v", playlists[p.controller.GetSelectedPlaylist()].Snippet.Title)
-		p.view.SetItemText(p.controller.GetSelectedPlaylist(), prevSelected, "")
+	prevSelectedPlaylist := p.controller.GetSelectedPlaylist()
+
+	if prevSelectedPlaylist >= 0 {
+		prevSelected := fmt.Sprintf("[white]%v", playlists[prevSelectedPlaylist].Snippet.Title)
+		p.view.SetItemText(prevSelectedPlaylist, prevSelected, "")
 	}
 
 	p.controller.SetSelectedPlaylist(i)
-	newSelected := fmt.Sprintf("[green]%v", playlists[p.controller.GetSelectedPlaylist()].Snippet.Title)
-	p.view.SetItemText(i, newSelected, "")
+	newSelectedPlaylist := p.controller.GetSelectedPlaylist()
+	newSelected := fmt.Sprintf("[green]%v", playlists[newSelectedPlaylist].Snippet.Title)
+	p.view.SetItemText(newSelectedPlaylist, newSelected, "")
 
-	p.NotifySelected(playlists[i])
+	p.NotifySelected(playlists[newSelectedPlaylist])
 	p.app.SetFocus(p.app.views["Videos"])
 }
