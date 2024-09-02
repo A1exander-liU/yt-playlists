@@ -24,7 +24,7 @@ func NewSelectPlaylist(a *App, name string, playlists []*youtube.Playlist, selec
 // Helper
 
 func (sp *SelectPlaylist) setupList(playlists []*youtube.Playlist, selected func(*youtube.Playlist)) *tview.List {
-	list := tview.NewList().ShowSecondaryText(false).SetHighlightFullLine(true)
+	list := tview.NewList().ShowSecondaryText(false).SetHighlightFullLine(true).SetWrapAround(false)
 	list.SetBorder(true)
 	list.SetInputCapture(sp.keyboard)
 
