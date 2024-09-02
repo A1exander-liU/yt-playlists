@@ -85,19 +85,9 @@ func (v *Video) ClearSelectedUI() {
 // to the new playlist.
 func (v *Video) MoveVideos(playlistId string) {
 	go func() {
-		videos := make([]*youtube.PlaylistItem, 0, len(v.selectedVideos))
-		for _, video := range v.selectedVideos {
-			videos = append(videos, video)
-		}
+		v.controller.MoveVideos(playlistId)
 
-		v.app.api.PlaylistItems.Move(playlistId, videos)
-		videos, err := v.app.api.PlaylistItems.List(v.selectedPlaylist.Id, []string{"snippet"})
-		if err != nil {
-			return
-		}
-		v.videos = videos
 		v.ClearSelected()
-
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
@@ -169,13 +159,19 @@ func (v *Video) moveVideosFlow() {
 	filtered := v.app.playlistController.ExcludeFromPlaylists(playlists, v.controller.SelectedPlaylist.Id)
 
 	sp := NewSelectPlaylist(v.app, "Move", filtered, func(p *youtube.Playlist) {
-		v.controller.MoveVideos(p.Id)
+		v.MoveVideos(p.Id)
 		v.app.CloseModal("Move")
 	})
 
 	v.app.QueueUpdateDraw(func() {
 		v.app.DisplayModal(sp.listModal, "Move")
 	})
+}
+
+func (v *Video) deleteVideosFlow() {
+	message := fmt.Sprintf("%v from %v", v.dialogActionMessage("Delete"), v.controller.SelectedPlaylist.Snippet.Title)
+	dialog := Dialog(message, func() { v.DeleteVideos() }, func() { v.app.CloseModal("Delete") })
+	v.app.DisplayModal(dialog, "Delete")
 }
 
 // Message to display for dialogs confirming actions to add, move, or delete videos from playlists.
@@ -224,11 +220,7 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 		if len(v.controller.GetSelectedVideos()) == 0 {
 			return nil
 		}
-
-		message := fmt.Sprintf("%v from %v", v.dialogActionMessage("Delete"), v.controller.SelectedPlaylist.Snippet.Title)
-		dialog := Dialog(message, func() { v.DeleteVideos() }, func() { v.app.CloseModal("Delete") })
-		v.app.DisplayModal(dialog, "Delete")
-
+		go v.deleteVideosFlow()
 	}
 
 	return event
