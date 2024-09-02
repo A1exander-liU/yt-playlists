@@ -5,7 +5,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"google.golang.org/api/youtube/v3"
 )
 
 // Form component for creating a new playlist. Contains a input field for the name,
@@ -19,8 +18,7 @@ type PlaylistForm struct {
 
 	formView *tview.Form
 
-	// callback for after form submission
-	afterSubmit func(*youtube.Playlist, error)
+	afterSubmit func(error)
 }
 
 // Information in playlist form
@@ -48,7 +46,7 @@ func NewPlaylistForm(app *App) *PlaylistForm {
 	return &form
 }
 
-func (p *PlaylistForm) SetAfterSubmitFunc(afterSubmit func(*youtube.Playlist, error)) *PlaylistForm {
+func (p *PlaylistForm) SetAfterSubmitFunc(afterSubmit func(error)) *PlaylistForm {
 	p.afterSubmit = afterSubmit
 	return p
 }
@@ -64,14 +62,15 @@ func (p *PlaylistForm) Close() {
 }
 
 // Submits the form and creates the playlist with the current form data.
-func (p *PlaylistForm) Submit() (*youtube.Playlist, error) {
+func (p *PlaylistForm) Submit() error {
 	formData := p.getFormData()
 
 	if formData.name == "" {
-		return nil, fmt.Errorf("Name must be filled out")
+		return fmt.Errorf("Name must be filled out")
 	}
 
-	return p.app.api.Playlists.Insert(formData.name, formData.description, formData.privacyStatus)
+	p.app.playlistController.CreatePlaylist(formData.name, formData.description, formData.privacyStatus)
+	return nil
 }
 
 // Initializes the component.
@@ -89,10 +88,10 @@ func (p *PlaylistForm) init() *tview.Form {
 		AddFormItem(dropdown).
 		AddTextArea("Description", "", 40, 0, 0, nil).
 		AddButton("Create", func() {
-			playlist, err := p.Submit()
+			err := p.Submit()
 
-			if playlist != nil && p.afterSubmit != nil {
-				p.afterSubmit(playlist, err)
+			if p.afterSubmit != nil {
+				p.afterSubmit(err)
 			}
 
 			p.Close()

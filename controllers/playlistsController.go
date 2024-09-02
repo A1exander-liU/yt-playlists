@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"slices"
 
 	"github.com/A1exander-liU/yt-playlists/api"
@@ -52,9 +53,10 @@ func (p *PlaylistsController) ExcludeFromPlaylists(playlists []*youtube.Playlist
 	return filtered
 }
 
-func (p *PlaylistsController) CreatePlaylist(name, privacyStatus, description string) {
+func (p *PlaylistsController) CreatePlaylist(name, description, privacyStatus string) {
 	playlist, _ := p.api.Playlists.Insert(name, description, privacyStatus)
 	slices.Insert(p.playlists, 0, playlist)
+	log.Println("New", playlist.Snippet.Title)
 }
 
 func (p *PlaylistsController) DeletePlaylist() {

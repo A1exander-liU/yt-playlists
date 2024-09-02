@@ -88,6 +88,30 @@ func (p *Playlist) SetPlaylists() {
 	}
 }
 
+func (p *Playlist) deletePlaylistFlow() {
+	current := p.view.GetCurrentItem()
+
+	confirm := func() {
+		p.controller.DeletePlaylistId(current)
+
+		if current == p.controller.GetSelectedPlaylist() {
+			p.controller.SetSelectedPlaylist(-1)
+		}
+		p.app.QueueUpdateDraw(func() {
+			p.SetPlaylists()
+		})
+	}
+
+	message := fmt.Sprintf("Delete the playlist: %s ?", p.controller.GetPlaylists()[current].Snippet.Title)
+	dialog := Dialog(
+		message,
+		func() {
+			go confirm()
+		},
+		func() { p.app.CloseModal("Delete") })
+	p.app.DisplayModal(dialog, "Delete")
+}
+
 // Handles keyboard input
 func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	if event.Key() == tcell.KeyTAB {
@@ -97,29 +121,10 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Rune() {
 	case 'a':
 		NewPlaylistForm(p.app).
-			SetAfterSubmitFunc(func(playlist *youtube.Playlist, err error) {
-			}).
+			SetAfterSubmitFunc(func(err error) { p.SetPlaylists() }).
 			Show()
 	case 'd':
-		current := p.view.GetCurrentItem()
-		confirm := func() {
-			p.controller.DeletePlaylistId(current)
-			if current == p.controller.GetSelectedPlaylist() {
-				p.controller.SetSelectedPlaylist(-1)
-			}
-			p.app.QueueUpdateDraw(func() {
-				p.SetPlaylists()
-			})
-		}
-
-		message := fmt.Sprintf("Delete the playlist: %s ?", p.controller.GetPlaylists()[current].Snippet.Title)
-		dialog := Dialog(
-			message,
-			func() {
-				go confirm()
-			},
-			func() { p.app.CloseModal("Delete") })
-		p.app.DisplayModal(dialog, "Delete")
+		p.deletePlaylistFlow()
 	case 'j':
 		return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 	case 'k':
