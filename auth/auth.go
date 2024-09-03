@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/A1exander-liU/yt-playlists/utils"
 	"golang.org/x/oauth2"
@@ -13,8 +15,30 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+const APP_CLIENT = "client_credentials.json"
+
+func AppClientPath() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Unable not locate home directory")
+		return ""
+	}
+
+	switch runtime.GOOS {
+	case "windows":
+		return filepath.Join(os.Getenv("LOCALAPPDATA"), utils.APP_NAME)
+	case "darwin":
+		return filepath.Join(homeDir, "Library", "Application Support", utils.APP_NAME)
+	case "linux":
+		return filepath.Join(homeDir, ".config", utils.APP_NAME)
+	default:
+		return filepath.Join(homeDir, ".config", utils.APP_NAME)
+	}
+}
+
 func GetClient(ctx context.Context) *http.Client {
-	contents, err := os.ReadFile("./client_credentials.json")
+	appClientPath := filepath.Join(AppClientPath(), APP_CLIENT)
+	contents, err := os.ReadFile(appClientPath)
 	if err != nil {
 		log.Fatalf("Error occurred reading the file: %v", err)
 	}

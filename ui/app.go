@@ -9,6 +9,8 @@ import (
 	"github.com/rivo/tview"
 )
 
+const APP_NAME = "yt-playlists"
+
 type App struct {
 	*tview.Application
 	keys               Keybindings
