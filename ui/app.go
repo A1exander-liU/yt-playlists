@@ -11,18 +11,21 @@ import (
 
 type App struct {
 	*tview.Application
+	keys               Keybindings
 	api                *api.ApiService
 	playlistController *controllers.PlaylistsController
 	videosController   *controllers.VideosController
 	pages              *tview.Pages
 	views              map[string]tview.Primitive
 	modals             map[string]bool
+	help               Help
 }
 
 func New() *App {
 	api := api.New()
 	app := App{
 		Application:        tview.NewApplication(),
+		keys:               initKeys(),
 		api:                api,
 		playlistController: controllers.NewPlaylistsController(api),
 		videosController:   controllers.NewVideosController(api),
@@ -53,6 +56,10 @@ func (a *App) Run() error {
 	return a.Application.Run()
 }
 
+func (a *App) SetHelpText(keyGroups ...map[string]string) {
+	a.help.SetHelpText(keyGroups...)
+}
+
 // Helper
 
 func (a *App) init() {
@@ -65,7 +72,9 @@ func (a *App) init() {
 	main := tview.NewFlex().
 		AddItem(playlists.view, 0, 1, true).
 		AddItem(videos.view, 0, 3, false)
-	help := NewHelp()
+	help := NewHelp(a)
+	a.views["Help"] = help.view
+	a.help = *help
 
 	core := tview.NewFlex().SetDirection(tview.FlexRow)
 	core.AddItem(main, 0, 10, true)

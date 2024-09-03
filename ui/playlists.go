@@ -64,6 +64,10 @@ func (p *Playlist) init() {
 	p.view.SetSelectedFunc(p.selected)
 	p.view.SetInputCapture(p.keyboard)
 
+	p.view.SetFocusFunc(func() {
+		p.app.SetHelpText(p.app.keys.playlists, p.app.keys.main, p.app.keys.global)
+	})
+
 	go func() {
 		p.controller.SyncPlaylists()
 		p.app.QueueUpdateDraw(func() { p.SetPlaylists() })

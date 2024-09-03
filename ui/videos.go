@@ -114,6 +114,10 @@ func (v *Video) init() {
 	v.view.SetSelectedFunc(func(i int, s1, s2 string, r rune) { v.ToggleSelected(i) })
 	v.view.SetSelectedBackgroundColor(COLOR_HIGHLIGHT)
 	v.view.SetInputCapture(v.keyboard)
+
+	v.view.SetFocusFunc(func() {
+		v.app.SetHelpText(v.app.keys.videos, v.app.keys.main, v.app.keys.global)
+	})
 }
 
 // Redraws the video items
