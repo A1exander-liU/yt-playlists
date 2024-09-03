@@ -9,7 +9,7 @@ import (
 )
 
 var rootCommand = &cobra.Command{
-	Use:     "yt-playlists",
+	Use:     ui.APP_NAME,
 	Short:   "Simple CLI to manage your Youtube playlists",
 	Long:    "Simple CLI to manage your Youtube playlists",
 	Version: "1",
