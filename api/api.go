@@ -10,7 +10,10 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
-var PART_SNIPPET = "snippet"
+var (
+	PART_SNIPPET         = "snippet"
+	PART_CONTENT_DETAILS = "contentDetails"
+)
 
 var (
 	PRIVACY_PRIVATE  = "private"

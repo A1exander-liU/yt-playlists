@@ -73,6 +73,7 @@ func videosKeys() map[string]string {
 	keys["Add"] = "a"
 	keys["Move"] = "m"
 	keys["Delete"] = "d"
+	keys["Open"] = "o"
 
 	return keys
 }

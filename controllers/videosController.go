@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"fmt"
+	"os/exec"
+
 	"github.com/A1exander-liU/yt-playlists/api"
 	"google.golang.org/api/youtube/v3"
 )
@@ -108,6 +111,16 @@ func (v *VideosController) FirstSelectedVideo() *youtube.PlaylistItem {
 
 // Retrieves the currennt videos of the selected playlist. Call this to sync the current videos with videos from the API server.
 func (v *VideosController) SyncVideos() {
-	videos, _ := v.api.PlaylistItems.List(v.SelectedPlaylist.Id, []string{api.PART_SNIPPET})
+	videos, _ := v.api.PlaylistItems.List(v.SelectedPlaylist.Id, []string{api.PART_SNIPPET, api.PART_CONTENT_DETAILS})
 	v.videos = videos
+}
+
+func (v *VideosController) OpenVideoInBrowser(videoId string) {
+	cmd := "xdg-open"
+	url := v.playlistVideoUrl(videoId)
+	exec.Command(cmd, url).Start()
+}
+
+func (v *VideosController) playlistVideoUrl(videoId string) string {
+	return fmt.Sprintf("https://www.youtube.com/watch?v=%s&list=%s", videoId, v.SelectedPlaylist.Id)
 }

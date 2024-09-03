@@ -178,6 +178,11 @@ func (v *Video) deleteVideosFlow() {
 	v.app.DisplayModal(dialog, "Delete")
 }
 
+func (v *Video) OpenInBrowser() {
+	videoId := v.controller.GetVideos()[v.view.GetCurrentItem()].ContentDetails.VideoId
+	v.controller.OpenVideoInBrowser(videoId)
+}
+
 // Message to display for dialogs confirming actions to add, move, or delete videos from playlists.
 // Will display name of video if there is only one otherwise it will list the amount of videos.
 func (v *Video) dialogActionMessage(verb string) string {
@@ -218,6 +223,8 @@ func (v *Video) keyboard(event *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 		go v.deleteVideosFlow()
+	case 'o':
+		v.OpenInBrowser()
 	}
 
 	return event
