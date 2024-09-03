@@ -7,6 +7,7 @@ import (
 
 // Handles all functionality to managing data on the Videos component.
 type VideosController struct {
+	// Api instance for accessing the Youtube api
 	api *api.ApiService
 
 	// The currently selected playlist
@@ -31,17 +32,18 @@ func NewVideosController(api *api.ApiService) *VideosController {
 	return &controller
 }
 
-// Retrieves the current videos in this object. Calls VideosController.syncVideos to maintain updated.
+// Retrieves the current videos in this object.
 func (v *VideosController) GetVideos() []*youtube.PlaylistItem {
 	return v.videos
 }
 
-func (v *VideosController) GetSelectedVideosMap() map[int]*youtube.PlaylistItem {
+// Retrieves the currently selected videos.
+func (v *VideosController) GetSelectedVideos() map[int]*youtube.PlaylistItem {
 	return v.selectedVideos
 }
 
-// Retrieves the currently selected videos.
-func (v *VideosController) GetSelectedVideos() []*youtube.PlaylistItem {
+// Retrieves the currently selected videos as a list.
+func (v *VideosController) GetSelectedVideosList() []*youtube.PlaylistItem {
 	videos := make([]*youtube.PlaylistItem, 0)
 
 	for _, video := range v.selectedVideos {
@@ -60,6 +62,7 @@ func (v *VideosController) ToggleSelected(i int) {
 	}
 }
 
+// Checks if the video is selected using its index in VideosController.videos.
 func (v *VideosController) IsSelectedVideo(i int) bool {
 	_, ok := v.selectedVideos[i]
 	return ok
@@ -74,14 +77,14 @@ func (v *VideosController) ClearSelectedVides() {
 
 // Adds the selected videos to the playlist specified by playlistId. The selected videos will be inserted into the playlist.
 func (v *VideosController) AddVideos(playlistId string) {
-	v.api.PlaylistItems.Add(playlistId, v.GetSelectedVideos())
+	v.api.PlaylistItems.Add(playlistId, v.GetSelectedVideosList())
 	v.SyncVideos()
 }
 
 // Moves the selected videos from the current playlist (VideosController.selectedPlaylist) to the playlist specified by playlistId.
 // The selected videos will be deleted from the current playlist and then inserted in the new playlist.
 func (v *VideosController) MoveVideos(playlistId string) {
-	v.api.PlaylistItems.Move(playlistId, v.GetSelectedVideos())
+	v.api.PlaylistItems.Move(playlistId, v.GetSelectedVideosList())
 	v.SyncVideos()
 }
 
