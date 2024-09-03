@@ -64,7 +64,7 @@ func (v *Video) ClearSelected() {
 
 // removes all selected videos from the map and unselects from ui
 func (v *Video) ClearSelectedUI() {
-	selectedVideos := v.controller.GetSelectedVideosMap()
+	selectedVideos := v.controller.GetSelectedVideos()
 	keys := make([]int, 0, len(selectedVideos))
 	for k := range selectedVideos {
 		keys = append(keys, k)
@@ -173,8 +173,8 @@ func (v *Video) deleteVideosFlow() {
 // Message to display for dialogs confirming actions to add, move, or delete videos from playlists.
 // Will display name of video if there is only one otherwise it will list the amount of videos.
 func (v *Video) dialogActionMessage(verb string) string {
-	message := fmt.Sprintf("%v %v videos", verb, len(v.controller.GetSelectedVideosMap()))
-	if len(v.controller.GetSelectedVideosMap()) == 1 {
+	message := fmt.Sprintf("%v %v videos", verb, len(v.controller.GetSelectedVideos()))
+	if len(v.controller.GetSelectedVideos()) == 1 {
 		oneVideo := v.controller.FirstSelectedVideo()
 		message = fmt.Sprintf("%v %v", verb, oneVideo.Snippet.Title)
 	}
