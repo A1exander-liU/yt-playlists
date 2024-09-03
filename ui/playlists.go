@@ -70,6 +70,8 @@ func (p *Playlist) init() {
 	}()
 }
 
+// Updates the view with updated set of playlists. The selected playlist will be displayed in green text and all the
+// other unselected ones will be displayed in white text.
 func (p *Playlist) SetPlaylists() {
 	var selectedPlaylistId string
 
@@ -88,6 +90,8 @@ func (p *Playlist) SetPlaylists() {
 	}
 }
 
+// UI flow presented when deleting a playlist. A dialog will be displayed asking for confirmation if the playlist should
+// be deleted. The initial option is defaulted as 'No'.
 func (p *Playlist) deletePlaylistFlow() {
 	current := p.view.GetCurrentItem()
 
@@ -135,6 +139,7 @@ func (p *Playlist) keyboard(event *tcell.EventKey) *tcell.EventKey {
 }
 
 // Callback when item is selected (pressing <space> or <enter>) in the list.
+// Selected playlist will be displayed in green text and unselected will be dislpayed in white text.
 func (p *Playlist) selected(i int, s1, s2 string, r rune) {
 	playlists := p.controller.GetPlaylists()
 	prevSelectedPlaylist := p.controller.GetSelectedPlaylist()

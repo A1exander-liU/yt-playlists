@@ -33,16 +33,18 @@ func NewVideos(a *App, controller *controllers.VideosController) *Video {
 	return &video
 }
 
-// Callback when playlist was selected
+// Callback when playlist was selected, implements the SelectedPlaylistListener interface.
 func (v *Video) PlaylistSelected(playlist *youtube.Playlist) {
 	go func() {
 		v.controller.SelectedPlaylist = playlist
 		v.controller.SyncVideos()
-		v.ClearSelected()
+		v.controller.ClearSelectedVideos()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
 
+// Toggles selection status of video in the list. Selected videos will be in green text and unselected videos will be
+// in white text.
 func (v *Video) ToggleSelected(i int) {
 	videos := v.controller.GetVideos()
 	mainText := fmt.Sprintf("%s • %s", videos[i].Snippet.Title, videos[i].Snippet.VideoOwnerChannelTitle)
@@ -57,12 +59,7 @@ func (v *Video) ToggleSelected(i int) {
 	v.view.SetItemText(i, mainText, "")
 }
 
-// removes all selected videos from the selected videos map
-func (v *Video) ClearSelected() {
-	v.controller.ClearSelectedVides()
-}
-
-// removes all selected videos from the map and unselects from ui
+// Removes all selected videos, additionally unselects all the selected videos displayed.
 func (v *Video) ClearSelectedUI() {
 	selectedVideos := v.controller.GetSelectedVideos()
 	keys := make([]int, 0, len(selectedVideos))
@@ -75,34 +72,35 @@ func (v *Video) ClearSelectedUI() {
 	}
 }
 
-// Moves the selected videos from current playlist to one specified by 'playlistId'
-//
-// THe selected videos will be removed from the current playlist and will be added
-// to the new playlist.
+// Moves the selected videos from current playlist to one specified by 'playlistId'.
+// The selected videos will be removed from the current playlist and will be added to the new playlist.
+// Redraws the screen right after in case of modifications to the list of videos.
 func (v *Video) MoveVideos(playlistId string) {
 	go func() {
 		v.controller.MoveVideos(playlistId)
 
-		v.ClearSelected()
+		v.controller.ClearSelectedVideos()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
 
-// Adds the selected videos from current playlist to one specified by 'playlistId'
+// Adds the selected videos from current playlist to one specified by 'playlistId'. Redraws the screen right
+// after in case of modifications to the list of videos.
 func (v *Video) AddVideos(playlistId string) {
 	go func() {
 		v.controller.AddVideos(playlistId)
 
-		v.ClearSelected()
+		v.controller.ClearSelectedVideos()
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
 }
 
-// Deletes the selected videos in the current playlist
+// Deletes the selected videos in the current playlist, redraws the screen right after in case of modifications
+// to the list of videos.
 func (v *Video) DeleteVideos() {
 	go func() {
 		v.controller.DeleteVideos()
-		v.ClearSelected()
+		v.controller.ClearSelectedVideos()
 
 		v.app.QueueUpdateDraw(func() { v.refreshItems() })
 	}()
@@ -128,6 +126,8 @@ func (v *Video) refreshItems() {
 	}
 }
 
+// UI flow presented when adding selected videos to a playlist. A modal will be displayed to list all playlists
+// to add the selected videos to. The videos will be added when a playlist is selected in this list.
 func (v *Video) addVideosFlow() {
 	playlists, err := v.app.api.Playlists.List([]string{"snippet"})
 	if err != nil {
@@ -146,6 +146,8 @@ func (v *Video) addVideosFlow() {
 	})
 }
 
+// UI flow presented when moving selected videos to a playlist. A modal will be displayed to list all playlists
+// to move the selected videos to. The videos will be moved when a playlist is selected in this list.
 func (v *Video) moveVideosFlow() {
 	playlists, err := v.app.api.Playlists.List([]string{"snippet"})
 	if err != nil {
@@ -164,6 +166,8 @@ func (v *Video) moveVideosFlow() {
 	})
 }
 
+// UI flow presented when deleting selected videos. A dialog will be displayed accessing for confirmation if the videos
+// should be deleted. The initial option is defaulted as 'No'.
 func (v *Video) deleteVideosFlow() {
 	message := fmt.Sprintf("%v from %v", v.dialogActionMessage("Delete"), v.controller.SelectedPlaylist.Snippet.Title)
 	dialog := Dialog(message, func() { v.DeleteVideos() }, func() { v.app.CloseModal("Delete") })

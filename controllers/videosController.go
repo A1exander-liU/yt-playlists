@@ -69,7 +69,7 @@ func (v *VideosController) IsSelectedVideo(i int) bool {
 }
 
 // Removes all selected videos.
-func (v *VideosController) ClearSelectedVides() {
+func (v *VideosController) ClearSelectedVideos() {
 	for k := range v.selectedVideos {
 		delete(v.selectedVideos, k)
 	}
