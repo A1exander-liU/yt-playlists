@@ -1,0 +1,29 @@
+{
+    "version": "0.9.1",
+    "architecture": {
+        "32bit": {
+            "url": "https://github.com/A1exander-liU/yt-playlists/releases/download/v0.9.1/yt-playlists_Windows_i386.zip",
+            "bin": [
+                "yt-playlists.exe"
+            ],
+            "hash": "b979214075359cd24e75fa89f04968d61bafabe80931d00deb0af7bedd763563"
+        },
+        "64bit": {
+            "url": "https://github.com/A1exander-liU/yt-playlists/releases/download/v0.9.1/yt-playlists_Windows_x86_64.zip",
+            "bin": [
+                "yt-playlists.exe"
+            ],
+            "hash": "82a3494c70cf394ed5fe15f144a5b33a574cc0dd4f1c9a2909c4a024e2f00abf"
+        },
+        "arm64": {
+            "url": "https://github.com/A1exander-liU/yt-playlists/releases/download/v0.9.1/yt-playlists_Windows_arm64.zip",
+            "bin": [
+                "yt-playlists.exe"
+            ],
+            "hash": "b589c05393467ad220b8365ec8931f0438f912b80f6c7bcd11c755be1b9d8109"
+        }
+    },
+    "homepage": "https://github.com/A1exander-liU/yt-playlists",
+    "license": "MIT",
+    "description": "Simple TUI app for managing your youtube playlists."
+}
