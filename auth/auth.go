@@ -21,7 +21,7 @@ func AppClientPath() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Unable not locate home directory")
-		return ""
+		os.Exit(1)
 	}
 
 	switch runtime.GOOS {
@@ -37,15 +37,19 @@ func AppClientPath() string {
 }
 
 func GetClient(ctx context.Context) *http.Client {
+	os.MkdirAll(AppClientPath(), 0700)
+
 	appClientPath := filepath.Join(AppClientPath(), APP_CLIENT)
 	contents, err := os.ReadFile(appClientPath)
 	if err != nil {
 		log.Fatalf("Error occurred reading the file: %v", err)
+		os.Exit(1)
 	}
 
 	config, err := google.ConfigFromJSON(contents, youtube.YoutubeScope, youtube.YoutubeReadonlyScope)
 	if err != nil {
 		log.Fatalf("Failed to parse credentials file: %v", err)
+		os.Exit(1)
 	}
 
 	var token *oauth2.Token
@@ -65,11 +69,13 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	var code string
 	if _, err := fmt.Scan(&code); err != nil {
 		log.Fatalf("Unable to read authorization code: %v", err)
+		os.Exit(1)
 	}
 
 	tok, err := config.Exchange(context.Background(), code)
 	if err != nil {
-		log.Fatal("Unable to retrieve token: %v", err)
+		log.Fatalf("Unable to retrieve token: %v", err)
+		os.Exit(1)
 	}
 
 	utils.SaveToken(tok)
