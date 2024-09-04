@@ -68,3 +68,7 @@ scoops:
     description: "Simple TUI app for managing your youtube playlists."
     homepage: "https://github.com/A1exander-liU/yt-playlists"
     license: MIT
+    repository:
+      owner: A1exander-liU
+      name: yt-playlists
+      branch: main
