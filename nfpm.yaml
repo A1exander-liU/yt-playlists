@@ -1,0 +1,39 @@
+# nfpm example configuration file
+#
+# check https://nfpm.goreleaser.com/configuration for detailed usage
+#
+name: "yt-playlists"
+arch: "amd64"
+platform: "linux"
+version: "1.0.0"
+section: "default"
+priority: "extra"
+depends:
+  - xdg-utils
+maintainer: "Alexander Liu <alexanderliu2016@gmail.com>"
+description: |
+  Simple TUI app to manage your youtube playlists.
+vendor: "Alexander Liu"
+homepage: "https://github.com/A1exander-liU/yt-playlists"
+license: "MIT"
+changelog: "changelog.yaml"
+contents:
+  - src: ./foo
+    dst: /usr/bin/foo
+  - src: ./bar
+    dst: /usr/bin/bar
+  - src: ./foobar.conf
+    dst: /etc/foobar.conf
+    type: config
+  - src: /usr/bin/foo
+    dst: /sbin/foo
+    type: symlink
+overrides:
+  rpm:
+    scripts:
+      preinstall: ./scripts/preinstall.sh
+      postremove: ./scripts/postremove.sh
+  deb:
+    scripts:
+      postinstall: ./scripts/postinstall.sh
+      preremove: ./scripts/preremove.sh
