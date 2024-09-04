@@ -1,3 +1,11 @@
-1. Create a New Project
-2. Configure OAuth Consent Screen
-   -
+# yt-playlists
+
+Simple TUI app for managing your Youtube playlists.
+
+- [Installation](#installation)
+- [Setup](#setup)
+
+## Installation
+
+## Setup
+
