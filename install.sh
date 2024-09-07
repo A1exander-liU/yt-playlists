@@ -29,5 +29,8 @@ PACKAGE="${APP_NAME}_${OS}_${ARCH}.tar.gz"
 DOWNLOAD="$REPO_URL/releases/download/$VERSION/$PACKAGE"
 
 curl -o ~/Downloads/$PACKAGE -L $DOWNLOAD
-tar -xzvf ~/Downloads/$PACKAGE
-mv $APP_NAME /usr/bin/
+tar -xzvf ~/Downloads/$PACKAGE -C ~/Downloads
+
+rm ~/Downloads/LICENSE ~/Downloads/README.md ~/Downloads/$PACKAGE
+
+sudo mv ~/Downloads/$APP_NAME /usr/bin/
