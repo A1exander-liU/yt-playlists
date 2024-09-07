@@ -26,6 +26,7 @@ func globalKeys() map[string]string {
 	keys := make(map[string]string, 2)
 
 	keys["Quit"] = "q"
+	keys["Logout"] = "Q"
 	keys["Help"] = "?"
 
 	return keys

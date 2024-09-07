@@ -62,3 +62,8 @@ func LoadToken() *oauth2.Token {
 
 	return token
 }
+
+func RemoveToken() {
+	tokenPath := filepath.Join(TokenPath(), TOKEN_FILE)
+	os.Remove(tokenPath)
+}

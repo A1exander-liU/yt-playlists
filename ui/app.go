@@ -5,6 +5,7 @@ import (
 
 	"github.com/A1exander-liU/yt-playlists/api"
 	"github.com/A1exander-liU/yt-playlists/controllers"
+	"github.com/A1exander-liU/yt-playlists/utils"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -101,12 +102,15 @@ func (a *App) init() {
 }
 
 func (a *App) keyboard(event *tcell.EventKey) *tcell.EventKey {
-	if event.Rune() == 'q' {
+	switch event.Rune() {
+	case 'q':
 		a.Stop()
 		os.Exit(0)
-	}
-
-	if event.Rune() == '?' {
+	case 'Q':
+		utils.RemoveToken()
+		a.Stop()
+		os.Exit(0)
+	case '?':
 		a.toggleHelp()
 	}
 
