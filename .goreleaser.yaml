@@ -47,21 +47,20 @@ changelog:
       - "^docs:"
       - "^test:"
 
-nfpms:
-  - id: default
-    vendor: Alexander Liu
-    homepage: https://github.com/A1exander-liU/yt-playlists
-    maintainer: Alexander Liu <alexanderliu2016@gmail.com>
-    description: Simple TUI app to manage your youtube playlists.
-    license: MIT
-    dependencies:
-      - xdg-utils
-    formats:
-      - apk
-      - deb
-      - rpm
-      - termux.deb
-      - archlinux
+# nfpms:
+#   - id: default
+#     vendor: Alexander Liu
+#     homepage: https://github.com/A1exander-liU/yt-playlists
+#     maintainer: Alexander Liu <alexanderliu2016@gmail.com>
+#     description: Simple TUI app to manage your youtube playlists.
+#     license: MIT
+#     dependencies:
+#       - xdg-utils
+#     formats:
+#       - apk
+#       - deb
+#       - rpm
+#       - archlinux
 
 scoops:
   - name: yt-playlists
