@@ -16,12 +16,12 @@ type VideosController struct {
 	// The currently selected playlist
 	SelectedPlaylist *youtube.Playlist
 
-	// To store all the current videos of the selected playlist
-	videos []*youtube.PlaylistItem
-
 	// Selected videos to perform operations on like: adding, moving, deleting to and from playlists. Stored as a map where
 	// the key is the index into VideosController.videos.
 	selectedVideos map[int]*youtube.PlaylistItem
+
+	// To store all the current videos of the selected playlist
+	videos []*youtube.PlaylistItem
 }
 
 // Creates a new VideosController

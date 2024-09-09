@@ -12,11 +12,11 @@ type PlaylistsController struct {
 	// Api instance for accessing the Youtube api
 	api *api.ApiService
 
-	// Index position of the selected playlist in PlaylistsController.playlists
-	selectedPlaylist int
-
 	// All the playlists
 	playlists []*youtube.Playlist
+
+	// Index position of the selected playlist in PlaylistsController.playlists
+	selectedPlaylist int
 }
 
 // Creates a new PlaylistsController.

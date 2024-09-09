@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -42,13 +41,13 @@ func GetClient(ctx context.Context) *http.Client {
 	appClientPath := filepath.Join(AppClientPath(), APP_CLIENT)
 	contents, err := os.ReadFile(appClientPath)
 	if err != nil {
-		log.Fatalf("Error occurred reading the file: %v", err)
+		fmt.Printf("Error occurred reading the file: %v\n", err)
 		os.Exit(1)
 	}
 
 	config, err := google.ConfigFromJSON(contents, youtube.YoutubeScope, youtube.YoutubeReadonlyScope)
 	if err != nil {
-		log.Fatalf("Failed to parse credentials file: %v", err)
+		fmt.Printf("Failed to parse credentials file: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -68,13 +67,13 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 
 	var code string
 	if _, err := fmt.Scan(&code); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
+		fmt.Printf("Unable to read authorization code: %v\n", err)
 		os.Exit(1)
 	}
 
 	tok, err := config.Exchange(context.Background(), code)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token: %v", err)
+		fmt.Printf("Unable to retrieve token: %v\n", err)
 		os.Exit(1)
 	}
 

@@ -17,7 +17,8 @@ aarch64)
   ARCH="arm64"
   ;;
 *)
-  command ...
+  echo "Unsupported architecture"
+  exit 1
   ;;
 esac
 
@@ -28,9 +29,11 @@ mkdir -p "$HOME/.$APP_NAME"
 PACKAGE="${APP_NAME}_${OS}_${ARCH}.tar.gz"
 DOWNLOAD="$REPO_URL/releases/download/$VERSION/$PACKAGE"
 
+mkdir -p ~/Downloads
 curl -o ~/Downloads/$PACKAGE -L $DOWNLOAD
 tar -xzf ~/Downloads/$PACKAGE -C ~/Downloads
 
 rm ~/Downloads/LICENSE ~/Downloads/README.md ~/Downloads/$PACKAGE
 
+echo "sudo privilege required to move binary to /usr/bin"
 sudo mv ~/Downloads/$APP_NAME /usr/bin/
